@@ -1,9 +1,44 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import SteamDeckMediaPlayer
 
 FocusScope {
     id: root
+    focus: true
+
+    function activateCurrentEntry() {
+        if (!browserList.currentItem) {
+            return
+        }
+
+        AppState.openEntry(
+            browserList.currentItem.path,
+            browserList.currentItem.isDirectory,
+            browserList.currentItem.isPlayable
+        )
+    }
+
+    function ensureListFocus() {
+        browserList.forceActiveFocus()
+        if (browserList.count > 0 && browserList.currentIndex < 0) {
+            browserList.currentIndex = 0
+            browserList.positionViewAtBeginning()
+        }
+    }
+
+    function moveSelection(delta) {
+        if (browserList.count <= 0) {
+            return
+        }
+
+        const nextIndex = Math.max(0, Math.min(browserList.count - 1, browserList.currentIndex + delta))
+        browserList.currentIndex = nextIndex
+        browserList.positionViewAtIndex(nextIndex, ListView.Contain)
+    }
+
+    Component.onCompleted: ensureListFocus()
+    onVisibleChanged: if (visible) ensureListFocus()
 
     Rectangle {
         anchors.fill: parent
@@ -35,8 +70,8 @@ FocusScope {
 
             CheckBox {
                 text: "Show hidden"
-                checked: appState.showHidden
-                onToggled: appState.showHidden = checked
+                checked: AppState.showHidden
+                onToggled: AppState.showHidden = checked
             }
         }
 
@@ -54,7 +89,7 @@ FocusScope {
                 anchors.rightMargin: 20
 
                 Label {
-                    text: appState.browserModel.currentPath
+                    text: AppState.browserModel.currentPath
                     color: "#ced9e5"
                     elide: Text.ElideMiddle
                     Layout.fillWidth: true
@@ -63,9 +98,19 @@ FocusScope {
 
                 Button {
                     text: "Up"
-                    enabled: appState.browserModel.canGoUp()
-                    onClicked: appState.navigateUp()
+                    enabled: AppState.browserModel.canGoUp()
+                    onClicked: AppState.navigateUp()
                 }
+            }
+        }
+
+        Connections {
+            target: AppState.browserModel
+
+            function onCurrentPathChanged() {
+                browserList.currentIndex = browserList.count > 0 ? 0 : -1
+                browserList.positionViewAtBeginning()
+                root.ensureListFocus()
             }
         }
 
@@ -74,21 +119,66 @@ FocusScope {
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
-            model: appState.browserModel
+            model: AppState.browserModel
             focus: true
-            currentIndex: count > 0 ? Math.max(0, currentIndex) : -1
+            currentIndex: -1
             keyNavigationWraps: false
             boundsBehavior: Flickable.StopAtBounds
             spacing: 10
 
+            onCountChanged: {
+                if (count > 0 && currentIndex < 0) {
+                    currentIndex = 0
+                } else if (count === 0) {
+                    currentIndex = -1
+                }
+            }
+
+            Keys.onUpPressed: event => {
+                root.moveSelection(-1)
+                event.accepted = true
+            }
+
+            Keys.onDownPressed: event => {
+                root.moveSelection(1)
+                event.accepted = true
+            }
+
             Keys.onPressed: event => {
-                if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space) {
-                    if (currentIndex >= 0 && currentItem) {
-                        appState.openEntry(currentItem.path, currentItem.isDirectory, currentItem.isPlayable)
-                    }
+                if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter
+                        || event.key === Qt.Key_Space || event.key === Qt.Key_Right
+                        || event.key === Qt.Key_D) {
+                    root.activateCurrentEntry()
                     event.accepted = true
-                } else if (event.key === Qt.Key_Backspace || event.key === Qt.Key_Escape) {
-                    appState.goBack()
+                } else if (event.key === Qt.Key_Backspace || event.key === Qt.Key_Escape
+                        || event.key === Qt.Key_Left || event.key === Qt.Key_A) {
+                    AppState.goBack()
+                    event.accepted = true
+                } else if (event.key === Qt.Key_PageDown) {
+                    root.moveSelection(10)
+                    event.accepted = true
+                } else if (event.key === Qt.Key_PageUp) {
+                    root.moveSelection(-10)
+                    event.accepted = true
+                } else if (event.key === Qt.Key_Q) {
+                    root.moveSelection(-8)
+                    event.accepted = true
+                } else if (event.key === Qt.Key_E) {
+                    root.moveSelection(8)
+                    event.accepted = true
+                } else if (event.key === Qt.Key_W) {
+                    root.moveSelection(-1)
+                    event.accepted = true
+                } else if (event.key === Qt.Key_S) {
+                    root.moveSelection(1)
+                    event.accepted = true
+                } else if (event.key === Qt.Key_Home && count > 0) {
+                    currentIndex = 0
+                    positionViewAtBeginning()
+                    event.accepted = true
+                } else if (event.key === Qt.Key_End && count > 0) {
+                    currentIndex = count - 1
+                    positionViewAtEnd()
                     event.accepted = true
                 }
             }
@@ -140,9 +230,14 @@ FocusScope {
 
                 MouseArea {
                     anchors.fill: parent
+                    onPressed: {
+                        browserList.currentIndex = index
+                        browserList.forceActiveFocus()
+                    }
                     onClicked: {
                         browserList.currentIndex = index
-                        appState.openEntry(path, isDirectory, isPlayable)
+                        browserList.forceActiveFocus()
+                        AppState.openEntry(path, isDirectory, isPlayable)
                     }
                 }
             }
@@ -151,7 +246,7 @@ FocusScope {
         }
 
         Label {
-            text: "Controls: D-pad or arrows move, A/Enter opens, B/Escape goes back"
+            text: "Controls: D-pad/arrows or W/S move, A/Enter/Right/D opens, B/Escape/Left/A goes back, Q/E or Page Up/Down jump"
             color: "#93a7bb"
             font.pixelSize: 18
         }

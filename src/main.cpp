@@ -1,22 +1,36 @@
 #include "AppState.h"
 #include "MpvVideoItem.h"
 
+#include <clocale>
 #include <QGuiApplication>
+#include <QLocale>
 #include <QQmlApplicationEngine>
-#include <QQmlContext>
+#include <QQuickWindow>
+#include <QSGRendererInterface>
+#include <QByteArray>
 #include <qqml.h>
 
 int main(int argc, char *argv[])
 {
+    qputenv("LC_NUMERIC", QByteArrayLiteral("C"));
+    qputenv("LANG", QByteArrayLiteral("C"));
+    qputenv("LC_ALL", QByteArrayLiteral("C"));
+    std::setlocale(LC_ALL, "C");
+    std::setlocale(LC_NUMERIC, "C");
+    QLocale::setDefault(QLocale::c());
+
     QGuiApplication app(argc, argv);
     app.setOrganizationName(QStringLiteral("steamdeckmediaplayer"));
     app.setApplicationName(QStringLiteral("steamdeckmediaplayer"));
 
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+
     qmlRegisterType<MpvVideoItem>("SteamDeckMediaPlayer", 1, 0, "MpvVideoItem");
 
-    QQmlApplicationEngine engine;
     AppState appState;
-    engine.rootContext()->setContextProperty(QStringLiteral("appState"), &appState);
+    qmlRegisterSingletonInstance("SteamDeckMediaPlayer", 1, 0, "AppState", &appState);
+
+    QQmlApplicationEngine engine;
 
     QObject::connect(
         &engine,

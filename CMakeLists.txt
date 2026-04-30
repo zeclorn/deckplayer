@@ -11,7 +11,6 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick)
 pkg_check_modules(LIBMPV REQUIRED IMPORTED_TARGET mpv)
 
 qt_standard_project_setup(REQUIRES 6.5)
-
 qt_add_executable(steamdeckmediaplayer
     src/main.cpp
     src/AppState.cpp
@@ -53,4 +52,12 @@ target_link_libraries(steamdeckmediaplayer
 install(TARGETS steamdeckmediaplayer
     BUNDLE DESTINATION .
     RUNTIME DESTINATION bin
+)
+
+install(FILES packaging/linux/steamdeckmediaplayer.desktop
+    DESTINATION share/applications
+)
+
+install(FILES assets/icons/steamdeckmediaplayer.svg
+    DESTINATION share/icons/hicolor/scalable/apps
 )

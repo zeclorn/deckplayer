@@ -77,7 +77,6 @@ private:
 MpvVideoItem::MpvVideoItem(QQuickItem *parent)
     : QQuickFramebufferObject(parent)
 {
-    setMirrorVertically(true);
     initializeMpv();
 }
 
@@ -261,7 +260,7 @@ void MpvVideoItem::processMpvEvents()
 
 void MpvVideoItem::maybeLoadFile()
 {
-    if (!m_mpv || m_mediaPath.isEmpty() || m_requestId <= 0 || m_requestId == m_loadedRequestId) {
+    if (!m_mpv || !m_renderContext || m_mediaPath.isEmpty() || m_requestId <= 0 || m_requestId == m_loadedRequestId) {
         return;
     }
 
@@ -287,6 +286,8 @@ void MpvVideoItem::initializeMpv()
     mpv_set_option_string(m_mpv, "osc", "no");
     mpv_set_option_string(m_mpv, "input-default-bindings", "no");
     mpv_set_option_string(m_mpv, "hwdec", "auto-safe");
+    mpv_set_option_string(m_mpv, "vo", "libmpv");
+    mpv_set_option_string(m_mpv, "force-window", "no");
 
     mpv_set_wakeup_callback(m_mpv, &MpvVideoItem::onMpvWakeup, this);
 
@@ -325,6 +326,7 @@ void MpvVideoItem::initializeRenderContext(QOpenGLContext *context)
     }
 
     mpv_render_context_set_update_callback(m_renderContext, &MpvVideoItem::onMpvUpdate, this);
+    maybeLoadFile();
 }
 
 void MpvVideoItem::destroyRenderContext()

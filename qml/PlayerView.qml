@@ -9,18 +9,18 @@ FocusScope {
 
     function closePlayerAndPersist() {
         if (!player.loaded && player.positionMs <= 0) {
-            appState.closePlayer()
+            AppState.closePlayer()
             return
         }
 
         if (player.durationMs > 0 && player.positionMs >= Math.max(0, player.durationMs - 60000)) {
-            appState.clearResume(appState.currentMediaPath)
+            AppState.clearResume(AppState.currentMediaPath)
         } else if (player.positionMs > 0) {
-            appState.savePlaybackPosition(player.positionMs)
+            AppState.savePlaybackPosition(player.positionMs)
         }
 
         player.stop()
-        appState.closePlayer()
+        AppState.closePlayer()
     }
 
     Rectangle {
@@ -32,13 +32,14 @@ FocusScope {
         if (event.key === Qt.Key_Escape || event.key === Qt.Key_Backspace) {
             closePlayerAndPersist()
             event.accepted = true
-        } else if (event.key === Qt.Key_Space || event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+        } else if (event.key === Qt.Key_Space || event.key === Qt.Key_Return
+                || event.key === Qt.Key_Enter || event.key === Qt.Key_P) {
             player.togglePause()
             event.accepted = true
-        } else if (event.key === Qt.Key_Left) {
+        } else if (event.key === Qt.Key_Left || event.key === Qt.Key_Q) {
             player.seekBackward()
             event.accepted = true
-        } else if (event.key === Qt.Key_Right) {
+        } else if (event.key === Qt.Key_Right || event.key === Qt.Key_E) {
             player.seekForward()
             event.accepted = true
         } else if (event.key === Qt.Key_X) {
@@ -59,7 +60,7 @@ FocusScope {
             Layout.fillWidth: true
 
             Label {
-                text: appState.currentMediaTitle
+                text: AppState.currentMediaTitle
                 color: "#f4f7fb"
                 font.pixelSize: 32
                 font.weight: Font.DemiBold
@@ -85,18 +86,18 @@ FocusScope {
             MpvVideoItem {
                 id: player
                 anchors.fill: parent
-                mediaPath: appState.currentMediaPath
-                startPositionMs: appState.playbackStartPositionMs
-                requestId: appState.playbackRequestId
+                mediaPath: AppState.currentMediaPath
+                startPositionMs: AppState.playbackStartPositionMs
+                requestId: AppState.playbackRequestId
 
                 onPlaybackFinished: {
-                    appState.clearResume(appState.currentMediaPath)
-                    appState.closePlayer()
+                    AppState.clearResume(AppState.currentMediaPath)
+                    AppState.closePlayer()
                 }
 
                 onPlaybackStopped: {
-                    if (appState.playerVisible) {
-                        appState.closePlayer()
+                    if (AppState.playerVisible) {
+                        AppState.closePlayer()
                     }
                 }
             }
@@ -148,7 +149,7 @@ FocusScope {
                     }
 
                     Label {
-                        text: appState.formatDuration(player.positionMs) + " / " + appState.formatDuration(player.durationMs)
+                        text: AppState.formatDuration(player.positionMs) + " / " + AppState.formatDuration(player.durationMs)
                         color: "#f4f7fb"
                         font.pixelSize: 20
                     }
@@ -157,7 +158,7 @@ FocusScope {
         }
 
         Label {
-            text: "Controls: A/Enter pause, Left/Right seek, X subtitles, Y audio, B/Escape back"
+            text: "Controls: A/Enter/P pause, Left/Q and Right/E seek, X subtitles, Y audio, B/Escape back, F fullscreen"
             color: "#93a7bb"
             font.pixelSize: 18
         }
