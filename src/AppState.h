@@ -13,6 +13,8 @@ class AppState final : public QObject
     Q_PROPERTY(bool resumePromptVisible READ resumePromptVisible NOTIFY resumePromptVisibleChanged)
     Q_PROPERTY(QString currentMediaPath READ currentMediaPath NOTIFY currentMediaChanged)
     Q_PROPERTY(QString currentMediaTitle READ currentMediaTitle NOTIFY currentMediaChanged)
+    Q_PROPERTY(qint64 playbackStartPositionMs READ playbackStartPositionMs NOTIFY currentMediaChanged)
+    Q_PROPERTY(int playbackRequestId READ playbackRequestId NOTIFY currentMediaChanged)
     Q_PROPERTY(QString pendingMediaTitle READ pendingMediaTitle NOTIFY resumePromptVisibleChanged)
     Q_PROPERTY(qint64 pendingResumePositionMs READ pendingResumePositionMs NOTIFY resumePromptVisibleChanged)
     Q_PROPERTY(bool showHidden READ showHidden WRITE setShowHidden NOTIFY showHiddenChanged)
@@ -25,6 +27,8 @@ public:
     bool resumePromptVisible() const;
     QString currentMediaPath() const;
     QString currentMediaTitle() const;
+    qint64 playbackStartPositionMs() const;
+    int playbackRequestId() const;
     QString pendingMediaTitle() const;
     qint64 pendingResumePositionMs() const;
     bool showHidden() const;
@@ -58,6 +62,8 @@ private:
     QSettings m_settings;
     QString m_currentMediaPath;
     QString m_currentMediaTitle;
+    qint64 m_playbackStartPositionMs = 0;
+    int m_playbackRequestId = 0;
     QString m_pendingMediaPath;
     QString m_pendingMediaTitle;
     qint64 m_pendingResumePositionMs = 0;

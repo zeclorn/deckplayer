@@ -1,0 +1,2 @@
+set(__QT_DEPLOY_TARGET_steamdeckmediaplayer_FILE /Users/justin/Documents/GitHub/steamdeckmediaplayer/build/bin/steamdeckmediaplayer)
+set(__QT_DEPLOY_TARGET_steamdeckmediaplayer_TYPE EXECUTABLE)

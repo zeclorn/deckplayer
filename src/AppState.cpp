@@ -60,6 +60,16 @@ QString AppState::currentMediaTitle() const
     return m_currentMediaTitle;
 }
 
+qint64 AppState::playbackStartPositionMs() const
+{
+    return m_playbackStartPositionMs;
+}
+
+int AppState::playbackRequestId() const
+{
+    return m_playbackRequestId;
+}
+
 QString AppState::pendingMediaTitle() const
 {
     return m_pendingMediaTitle;
@@ -245,7 +255,8 @@ void AppState::beginPlayback(const QString &path, qint64 startPositionMs)
 
     m_currentMediaPath = path;
     m_currentMediaTitle = fileInfo.fileName();
-    m_pendingResumePositionMs = startPositionMs;
+    m_playbackStartPositionMs = startPositionMs;
+    ++m_playbackRequestId;
     m_playerVisible = true;
     emit currentMediaChanged();
     emit playerVisibleChanged();

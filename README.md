@@ -13,7 +13,7 @@ Steam Deck Media Player is a small local-first media browser and player aimed at
 ## Stack
 
 - `Qt 6 + QML` for the shell and UI
-- `libmpv` planned for playback
+- `libmpv` for playback
 - `CMake` for builds
 - `AppImage` planned for distribution
 
@@ -24,11 +24,11 @@ The repository currently includes:
 - a Qt/QML application skeleton
 - a folder-first browser model rooted from the user's filesystem
 - persistence for last visited folder, hidden-file toggle, and saved resume positions
-- a placeholder player screen that marks where `libmpv` integration will land next
+- embedded `libmpv` playback with pause, seek, subtitle cycling, and audio track cycling
 
 ## Build
 
-You need Qt 6.5 or newer with `Core`, `Gui`, `Qml`, and `Quick`.
+You need Qt 6.5 or newer with `Core`, `Gui`, `Qml`, and `Quick`, plus the `libmpv` development package available through `pkg-config` as `mpv`.
 
 ```bash
 cmake -S . -B build
@@ -37,7 +37,7 @@ cmake --build build
 
 ## Next implementation steps
 
-1. Replace the placeholder player view with embedded `libmpv`
-2. Add real playback controls for seek, subtitle selection, and audio track switching
-3. Add direct gamepad support alongside Steam Input keyboard mappings
-4. Add AppImage packaging
+1. Add richer OSD state for subtitle/audio track names and seek feedback
+2. Add direct gamepad support alongside Steam Input keyboard mappings
+3. Add AppImage packaging
+4. Test and tune behavior on actual Steam Deck hardware
