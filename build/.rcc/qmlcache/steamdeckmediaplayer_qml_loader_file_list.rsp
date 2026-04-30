@@ -1,8 +1,0 @@
---resource
-/Users/justin/Documents/GitHub/steamdeckmediaplayer/build/.qt/rcc/qmake_SteamDeckMediaPlayer.qrc
---resource
-/Users/justin/Documents/GitHub/steamdeckmediaplayer/build/.qt/rcc/steamdeckmediaplayer_raw_qml_0.qrc
-/qt/qml/SteamDeckMediaPlayer/qml/Main.qml
-/qt/qml/SteamDeckMediaPlayer/qml/BrowserView.qml
-/qt/qml/SteamDeckMediaPlayer/qml/PlayerView.qml
-/qt/qml/SteamDeckMediaPlayer/qml/ResumeDialog.qml

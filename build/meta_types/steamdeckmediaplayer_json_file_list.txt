@@ -1,3 +1,0 @@
-/Users/justin/Documents/GitHub/steamdeckmediaplayer/build/steamdeckmediaplayer_autogen/include/../UVLADIE3JM/moc_AppState.cpp.json
-/Users/justin/Documents/GitHub/steamdeckmediaplayer/build/steamdeckmediaplayer_autogen/include/../UVLADIE3JM/moc_FileBrowserModel.cpp.json
-/Users/justin/Documents/GitHub/steamdeckmediaplayer/build/steamdeckmediaplayer_autogen/include/../UVLADIE3JM/moc_MpvVideoItem.cpp.json

@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="/">
-    <file alias="/qt/qml/SteamDeckMediaPlayer">/Users/justin/Documents/GitHub/steamdeckmediaplayer/build/SteamDeckMediaPlayer</file>
-
-  </qresource>
-</RCC>

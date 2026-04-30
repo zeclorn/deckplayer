@@ -1,9 +1,0 @@
-module SteamDeckMediaPlayer
-typeinfo steamdeckmediaplayer.qmltypes
-prefer :/qt/qml/SteamDeckMediaPlayer/
-Main 1.0 qml/Main.qml
-BrowserView 1.0 qml/BrowserView.qml
-PlayerView 1.0 qml/PlayerView.qml
-ResumeDialog 1.0 qml/ResumeDialog.qml
-depends QtQuick
-

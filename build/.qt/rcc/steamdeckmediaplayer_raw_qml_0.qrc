@@ -1,9 +1,0 @@
-<RCC>
-  <qresource prefix="/qt/qml/SteamDeckMediaPlayer/">
-    <file alias="qml/Main.qml">/Users/justin/Documents/GitHub/steamdeckmediaplayer/qml/Main.qml</file>
-    <file alias="qml/BrowserView.qml">/Users/justin/Documents/GitHub/steamdeckmediaplayer/qml/BrowserView.qml</file>
-    <file alias="qml/PlayerView.qml">/Users/justin/Documents/GitHub/steamdeckmediaplayer/qml/PlayerView.qml</file>
-    <file alias="qml/ResumeDialog.qml">/Users/justin/Documents/GitHub/steamdeckmediaplayer/qml/ResumeDialog.qml</file>
-  </qresource>
-</RCC>
-
