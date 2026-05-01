@@ -7,8 +7,35 @@ FocusScope {
     id: root
     focus: true
     property double lastPrimaryActionMs: 0
+    property double openedAtMs: 0
+
+    Connections {
+        target: AppState
+
+        function onCurrentMediaChanged() {
+            root.openedAtMs = Date.now()
+            root.lastPrimaryActionMs = root.openedAtMs
+            root.forceActiveFocus()
+        }
+
+        function onPlayerVisibleChanged() {
+            if (AppState.playerVisible && root.visible) {
+                root.openedAtMs = Date.now()
+                root.lastPrimaryActionMs = root.openedAtMs
+                root.forceActiveFocus()
+            }
+        }
+    }
+
+    function isInLaunchGuardWindow() {
+        return Date.now() - openedAtMs < 300
+    }
 
     function shouldAcceptPrimaryAction() {
+        if (isInLaunchGuardWindow()) {
+            return false
+        }
+
         const now = Date.now()
         if (now - lastPrimaryActionMs < 350) {
             return false
@@ -18,6 +45,10 @@ FocusScope {
     }
 
     function closePlayerAndPersist(force) {
+        if (!force && isInLaunchGuardWindow()) {
+            return
+        }
+
         if (!force && !shouldAcceptPrimaryAction()) {
             return
         }
@@ -33,7 +64,7 @@ FocusScope {
 
     Connections {
         target: ControllerInput
-        enabled: root.visible
+        enabled: root.visible && AppState.playerVisible
 
         function onActionPressed(action) {
             if (action === "cancel") {
@@ -58,6 +89,10 @@ FocusScope {
     }
 
     Keys.onPressed: event => {
+        if (!AppState.playerVisible) {
+            return
+        }
+
         if (event.key === Qt.Key_Escape || event.key === Qt.Key_Backspace) {
             closePlayerAndPersist()
             event.accepted = true

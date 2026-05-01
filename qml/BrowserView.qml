@@ -63,12 +63,22 @@ FocusScope {
         browserList.positionViewAtIndex(nextIndex, ListView.Contain)
     }
 
-    Component.onCompleted: ensureListFocus()
-    onVisibleChanged: if (visible) ensureListFocus()
+    Component.onCompleted: if (!AppState.playerVisible) ensureListFocus()
+    onVisibleChanged: if (visible && !AppState.playerVisible) ensureListFocus()
+
+    Connections {
+        target: AppState
+
+        function onPlayerVisibleChanged() {
+            if (!AppState.playerVisible && root.visible) {
+                root.ensureListFocus()
+            }
+        }
+    }
 
     Connections {
         target: ControllerInput
-        enabled: root.visible
+        enabled: root.visible && !AppState.playerVisible
 
         function onActionPressed(action) {
             if (action === "up") {
@@ -184,16 +194,26 @@ FocusScope {
             }
 
             Keys.onUpPressed: event => {
+                if (AppState.playerVisible) {
+                    return
+                }
                 root.moveSelection(-1)
                 event.accepted = true
             }
 
             Keys.onDownPressed: event => {
+                if (AppState.playerVisible) {
+                    return
+                }
                 root.moveSelection(1)
                 event.accepted = true
             }
 
             Keys.onPressed: event => {
+                if (AppState.playerVisible) {
+                    return
+                }
+
                 if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter
                         || event.key === Qt.Key_Space || event.key === Qt.Key_D) {
                     root.activateCurrentEntry()
