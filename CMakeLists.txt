@@ -11,6 +11,10 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick)
 pkg_check_modules(LIBMPV REQUIRED IMPORTED_TARGET mpv)
 
 qt_standard_project_setup(REQUIRES 6.5)
+if(QT_KNOWN_POLICY_QTP0004)
+    qt_policy(SET QTP0004 NEW)
+endif()
+
 qt_add_executable(steamdeckmediaplayer
     src/main.cpp
     src/AppState.cpp
