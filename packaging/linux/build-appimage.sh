@@ -66,10 +66,31 @@ copy_if_exists /usr/lib/qt6/qml/QtQuick "${APPDIR}/usr/qml"
 
 APPIMAGE_EXTRACT_AND_RUN=1 NO_STRIP=1 LINUXDEPLOY_NO_STRIP=1 linuxdeploy \
     --appdir "${APPDIR}" \
-    --exclude-library='libavformat.so*' \
     --desktop-file "${APPDIR}/steamdeckmediaplayer.desktop" \
-    --icon-file "${APPDIR}/steamdeckmediaplayer.svg" \
-    --output appimage
+    --icon-file "${APPDIR}/steamdeckmediaplayer.svg"
+
+mkdir -p "${APPDIR}/usr/optional-libs"
+mv "${APPDIR}"/usr/lib/libavformat.so* "${APPDIR}/usr/optional-libs/" 2>/dev/null || true
+
+rm -f "${APPDIR}/AppRun"
+cat > "${APPDIR}/AppRun" <<'EOF'
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BUNDLED_AVFORMAT="${APPDIR}/usr/optional-libs/libavformat.so.62"
+
+if [[ "${STEAMDECKMEDIAPLAYER_USE_BUNDLED_FFMPEG:-0}" == "1" ]] ||
+    ! ldconfig -p 2>/dev/null | grep -q 'libavformat\.so\.62'; then
+    export LD_PRELOAD="${BUNDLED_AVFORMAT}${LD_PRELOAD:+:${LD_PRELOAD}}"
+fi
+
+exec "${APPDIR}/usr/bin/steamdeckmediaplayer" "$@"
+EOF
+chmod +x "${APPDIR}/AppRun"
+
+APPIMAGE_EXTRACT_AND_RUN=1 appimagetool "${APPDIR}"
 
 mv -f "${ROOT_DIR}"/Steam_Deck_Media_Player-*.AppImage "${OUTPUT_DIR}/" 2>/dev/null || true
 
