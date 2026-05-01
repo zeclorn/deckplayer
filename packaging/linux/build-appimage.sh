@@ -37,11 +37,10 @@ cmake --install "${BUILD_DIR}" --prefix "${APPDIR}/usr"
 cp "${ROOT_DIR}/packaging/linux/steamdeckmediaplayer.desktop" "${APPDIR}/"
 cp "${ROOT_DIR}/assets/icons/steamdeckmediaplayer.svg" "${APPDIR}/steamdeckmediaplayer.svg"
 
-NO_STRIP=1 LINUXDEPLOY_NO_STRIP=1 linuxdeploy \
+APPIMAGE_EXTRACT_AND_RUN=1 NO_STRIP=1 LINUXDEPLOY_NO_STRIP=1 linuxdeploy \
     --appdir "${APPDIR}" \
     --desktop-file "${APPDIR}/steamdeckmediaplayer.desktop" \
     --icon-file "${APPDIR}/steamdeckmediaplayer.svg" \
-    --no-strip \
     --output appimage
 
 mv -f "${ROOT_DIR}"/Steam_Deck_Media_Player-*.AppImage "${OUTPUT_DIR}/" 2>/dev/null || true
