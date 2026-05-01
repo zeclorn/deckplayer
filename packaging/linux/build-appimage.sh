@@ -68,6 +68,14 @@ copy_if_exists() {
     fi
 }
 
+copy_qt_library() {
+    local library_name="$1"
+
+    copy_glob_if_exists "${QT_LIBRARY_DIR}/${library_name}.so*" "${APPDIR}/usr/lib"
+    copy_glob_if_exists "/usr/lib*/${library_name}.so*" "${APPDIR}/usr/lib"
+    copy_glob_if_exists "/usr/lib*/*/${library_name}.so*" "${APPDIR}/usr/lib"
+}
+
 version_gt() {
     [[ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -n 1)" == "$1" && "$1" != "$2" ]]
 }
@@ -103,6 +111,7 @@ fi
 QTPATHS_BIN="${QTPATHS_BIN:-$(find_cmd qtpaths6 qtpaths || true)}"
 QT_PLUGIN_DIR="${QT_PLUGIN_DIR:-}"
 QT_QML_DIR="${QT_QML_DIR:-${QML2_IMPORT_PATH:-}}"
+QT_LIBRARY_DIR="${QT_LIBRARY_DIR:-}"
 
 if [[ -z "${QT_PLUGIN_DIR}" && -n "${QTPATHS_BIN}" ]]; then
     QT_PLUGIN_DIR="$("${QTPATHS_BIN}" --query QT_INSTALL_PLUGINS 2>/dev/null || true)"
@@ -110,6 +119,10 @@ fi
 
 if [[ -z "${QT_QML_DIR}" && -n "${QTPATHS_BIN}" ]]; then
     QT_QML_DIR="$("${QTPATHS_BIN}" --query QT_INSTALL_QML 2>/dev/null || true)"
+fi
+
+if [[ -z "${QT_LIBRARY_DIR}" && -n "${QTPATHS_BIN}" ]]; then
+    QT_LIBRARY_DIR="$("${QTPATHS_BIN}" --query QT_INSTALL_LIBS 2>/dev/null || true)"
 fi
 
 QT_PLUGIN_DIR="${QT_PLUGIN_DIR:-$(first_existing_path \
@@ -120,6 +133,10 @@ QT_QML_DIR="${QT_QML_DIR:-$(first_existing_path \
     /usr/lib64/qt6/qml \
     /usr/lib/qt6/qml \
     /usr/lib/x86_64-linux-gnu/qt6/qml || true)}"
+QT_LIBRARY_DIR="${QT_LIBRARY_DIR:-$(first_existing_path \
+    /usr/lib64 \
+    /usr/lib \
+    /usr/lib/x86_64-linux-gnu || true)}"
 MUJS_LIB_GLOB="${MUJS_LIB_GLOB:-$(first_existing_path \
     /usr/lib64/libmujs.so* \
     /usr/lib/libmujs.so* \
@@ -162,6 +179,24 @@ copy_if_exists "${QT_PLUGIN_DIR}/platforminputcontexts" "${APPDIR}/usr/plugins"
 copy_if_exists "${QT_PLUGIN_DIR}/wayland-decoration-client" "${APPDIR}/usr/plugins"
 copy_if_exists "${QT_PLUGIN_DIR}/wayland-graphics-integration-client" "${APPDIR}/usr/plugins"
 copy_if_exists "${QT_PLUGIN_DIR}/wayland-shell-integration" "${APPDIR}/usr/plugins"
+copy_glob_if_exists "/usr/lib*/libQt6XcbQpa.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/*/libQt6XcbQpa.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/libxcb-cursor.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/*/libxcb-cursor.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/libxcb-icccm.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/*/libxcb-icccm.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/libxcb-image.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/*/libxcb-image.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/libxcb-keysyms.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/*/libxcb-keysyms.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/libxcb-render-util.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/*/libxcb-render-util.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/libxcb-xinput.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/*/libxcb-xinput.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/libxcb-xkb.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/*/libxcb-xkb.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/libxkbcommon-x11.so*" "${APPDIR}/usr/lib"
+copy_glob_if_exists "/usr/lib*/*/libxkbcommon-x11.so*" "${APPDIR}/usr/lib"
 copy_if_exists "${QT_QML_DIR}/QtCore" "${APPDIR}/usr/qml"
 copy_if_exists "${QT_QML_DIR}/QtQml" "${APPDIR}/usr/qml"
 copy_if_exists "${QT_QML_DIR}/QtQuick" "${APPDIR}/usr/qml"
@@ -169,13 +204,19 @@ if [[ -n "${MUJS_LIB_GLOB}" ]]; then
     copy_glob_if_exists "${MUJS_LIB_GLOB}" "${APPDIR}/usr/lib"
 fi
 
+copy_qt_library libQt6QmlWorkerScript
+copy_qt_library libQt6QuickControls2
+copy_qt_library libQt6QuickControls2Impl
+copy_qt_library libQt6QuickTemplates2
+copy_qt_library libQt6QmlMeta
+
 APPIMAGE_EXTRACT_AND_RUN=1 NO_STRIP=1 LINUXDEPLOY_NO_STRIP=1 "${LINUXDEPLOY_BIN}" \
     --appdir "${APPDIR}" \
     --desktop-file "${APPDIR}/steamdeckmediaplayer.desktop" \
     --icon-file "${APPDIR}/steamdeckmediaplayer.svg"
 
 mkdir -p "${APPDIR}/usr/optional-libs"
-mv "${APPDIR}"/usr/lib/libavformat.so* "${APPDIR}/usr/optional-libs/" 2>/dev/null || true
+copy_glob_if_exists "${APPDIR}/usr/lib/libavformat.so*" "${APPDIR}/usr/optional-libs"
 {
     declare -A bundled_sonames=()
     for library_glob in \
@@ -210,6 +251,8 @@ APP_LIB_DIR="${APPDIR}/usr/lib"
 OPTIONAL_LIB_DIR="${APPDIR}/usr/optional-libs"
 FFMPEG_PRELOAD_MANIFEST="${OPTIONAL_LIB_DIR}/ffmpeg-preload-libs.txt"
 
+export LD_LIBRARY_PATH="${APP_LIB_DIR}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+
 host_has_bundled_libavformat=0
 while IFS= read -r library_name; do
     if [[ "${library_name}" == libavformat.so.* ]] &&
@@ -223,15 +266,15 @@ if [[ "${STEAMDECKMEDIAPLAYER_USE_BUNDLED_FFMPEG:-0}" == "1" ]] ||
     [[ "${host_has_bundled_libavformat}" != "1" ]]; then
     bundled_ffmpeg_preload=""
     while IFS= read -r library_name; do
-        if [[ "${library_name}" == "libavformat.so.62" ]]; then
+        bundled_lib="${APP_LIB_DIR}/${library_name}"
+        if [[ ! -e "${bundled_lib}" && "${library_name}" == libavformat.so.* ]]; then
             bundled_lib="${OPTIONAL_LIB_DIR}/${library_name}"
-        else
-            bundled_lib="${APP_LIB_DIR}/${library_name}"
         fi
         if [[ -e "${bundled_lib}" ]]; then
             bundled_ffmpeg_preload="${bundled_ffmpeg_preload}${bundled_ffmpeg_preload:+:}${bundled_lib}"
         fi
     done < "${FFMPEG_PRELOAD_MANIFEST}"
+    export LD_LIBRARY_PATH="${OPTIONAL_LIB_DIR}:${LD_LIBRARY_PATH}"
     export LD_PRELOAD="${bundled_ffmpeg_preload}${LD_PRELOAD:+:${LD_PRELOAD}}"
 fi
 

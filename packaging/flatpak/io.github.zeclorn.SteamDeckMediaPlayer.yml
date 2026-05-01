@@ -1,0 +1,47 @@
+app-id: io.github.zeclorn.SteamDeckMediaPlayer
+runtime: org.kde.Platform
+runtime-version: '6.9'
+sdk: org.kde.Sdk
+command: steamdeckmediaplayer
+
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --socket=pulseaudio
+  - --device=dri
+  - --filesystem=host:ro
+  - --persist=.local/share/steamdeckmediaplayer
+
+cleanup:
+  - /include
+  - /lib/cmake
+  - /lib/pkgconfig
+  - /share/man
+  - '*.a'
+  - '*.la'
+
+modules:
+  - name: steamdeckmediaplayer
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+    sources:
+      - type: dir
+        path: ../..
+        skip:
+          - .git
+          - .agents
+          - .codex
+          - AppDir
+          - build
+          - build-*
+          - cmake-build-*
+          - dist
+          - output.txt
+    post-install:
+      - rm -f /app/share/applications/steamdeckmediaplayer.desktop
+      - rm -f /app/share/icons/hicolor/scalable/apps/steamdeckmediaplayer.svg
+      - install -Dm644 packaging/flatpak/io.github.zeclorn.SteamDeckMediaPlayer.desktop /app/share/applications/io.github.zeclorn.SteamDeckMediaPlayer.desktop
+      - install -Dm644 packaging/flatpak/io.github.zeclorn.SteamDeckMediaPlayer.metainfo.xml /app/share/metainfo/io.github.zeclorn.SteamDeckMediaPlayer.metainfo.xml
+      - install -Dm644 assets/icons/steamdeckmediaplayer.svg /app/share/icons/hicolor/scalable/apps/io.github.zeclorn.SteamDeckMediaPlayer.svg
