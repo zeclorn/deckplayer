@@ -6,6 +6,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BUILD_DIR="${ROOT_DIR}/build-linux"
 APPDIR="${ROOT_DIR}/AppDir"
 OUTPUT_DIR="${ROOT_DIR}/dist"
+STEAMOS_MAX_GLIBC="${STEAMOS_MAX_GLIBC:-2.41}"
 
 require_cmd() {
     if ! command -v "$1" >/dev/null 2>&1; then
@@ -29,8 +30,35 @@ copy_if_exists() {
     fi
 }
 
+version_gt() {
+    [[ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -n 1)" == "$1" && "$1" != "$2" ]]
+}
+
+host_glibc_version() {
+    ldd --version | sed -n '1s/.* //p'
+}
+
 if [[ "$(uname -s)" != "Linux" ]]; then
     echo "AppImage packaging must be run on Linux." >&2
+    exit 1
+fi
+
+HOST_GLIBC="$(host_glibc_version)"
+if version_gt "${HOST_GLIBC}" "${STEAMOS_MAX_GLIBC}" &&
+    [[ "${STEAMDECKMEDIAPLAYER_ALLOW_NEW_GLIBC:-0}" != "1" ]]; then
+    cat >&2 <<EOF
+This build host uses glibc ${HOST_GLIBC}, which is newer than the SteamOS
+compatibility target ${STEAMOS_MAX_GLIBC}.
+
+Build this AppImage on SteamOS, or in a Linux container/VM with glibc
+${STEAMOS_MAX_GLIBC} or older. Newer bundled libraries can require symbols
+that SteamOS does not provide, causing runtime errors such as:
+
+    GLIBC_2.43 not found
+
+Set STEAMDECKMEDIAPLAYER_ALLOW_NEW_GLIBC=1 only for local, non-SteamOS test
+builds.
+EOF
     exit 1
 fi
 
@@ -63,6 +91,7 @@ copy_if_exists /usr/lib/qt6/plugins/wayland-shell-integration "${APPDIR}/usr/plu
 copy_if_exists /usr/lib/qt6/qml/QtCore "${APPDIR}/usr/qml"
 copy_if_exists /usr/lib/qt6/qml/QtQml "${APPDIR}/usr/qml"
 copy_if_exists /usr/lib/qt6/qml/QtQuick "${APPDIR}/usr/qml"
+copy_if_exists /usr/lib/libmujs.so "${APPDIR}/usr/lib"
 
 APPIMAGE_EXTRACT_AND_RUN=1 NO_STRIP=1 LINUXDEPLOY_NO_STRIP=1 linuxdeploy \
     --appdir "${APPDIR}" \

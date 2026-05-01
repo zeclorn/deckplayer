@@ -64,6 +64,13 @@ That script expects these tools on the Linux build machine:
 - Qt 6 development packages
 - `libmpv` development packages
 
+For SteamOS-compatible AppImages, build on SteamOS or on a Linux container/VM
+whose glibc is no newer than SteamOS. Building on a newer rolling distro can
+produce bundled libraries that fail on Steam Deck with errors like
+`GLIBC_2.43 not found`. The packaging script rejects too-new build hosts by
+default; set `STEAMDECKMEDIAPLAYER_ALLOW_NEW_GLIBC=1` only for local,
+non-SteamOS test builds.
+
 The script writes the final AppImage to `dist/`.
 
 ## Recommended Steam Input mapping
