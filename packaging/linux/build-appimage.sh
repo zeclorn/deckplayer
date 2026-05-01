@@ -71,6 +71,17 @@ APPIMAGE_EXTRACT_AND_RUN=1 NO_STRIP=1 LINUXDEPLOY_NO_STRIP=1 linuxdeploy \
 
 mkdir -p "${APPDIR}/usr/optional-libs"
 mv "${APPDIR}"/usr/lib/libavformat.so* "${APPDIR}/usr/optional-libs/" 2>/dev/null || true
+{
+    printf '%s\n' \
+        "libavutil.so.60" \
+        "libswresample.so.6" \
+        "libswscale.so.9" \
+        "libavcodec.so.62" \
+        "libxml2.so.16" \
+        "libavformat.so.62" \
+        "libavfilter.so.11" \
+        "libavdevice.so.62"
+} > "${APPDIR}/usr/optional-libs/ffmpeg-preload-libs.txt"
 
 rm -f "${APPDIR}/AppRun"
 cat > "${APPDIR}/AppRun" <<'EOF'
@@ -79,11 +90,24 @@ cat > "${APPDIR}/AppRun" <<'EOF'
 set -euo pipefail
 
 APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BUNDLED_AVFORMAT="${APPDIR}/usr/optional-libs/libavformat.so.62"
+APP_LIB_DIR="${APPDIR}/usr/lib"
+OPTIONAL_LIB_DIR="${APPDIR}/usr/optional-libs"
+FFMPEG_PRELOAD_MANIFEST="${OPTIONAL_LIB_DIR}/ffmpeg-preload-libs.txt"
 
 if [[ "${STEAMDECKMEDIAPLAYER_USE_BUNDLED_FFMPEG:-0}" == "1" ]] ||
     ! ldconfig -p 2>/dev/null | grep -q 'libavformat\.so\.62'; then
-    export LD_PRELOAD="${BUNDLED_AVFORMAT}${LD_PRELOAD:+:${LD_PRELOAD}}"
+    bundled_ffmpeg_preload=""
+    while IFS= read -r library_name; do
+        if [[ "${library_name}" == "libavformat.so.62" ]]; then
+            bundled_lib="${OPTIONAL_LIB_DIR}/${library_name}"
+        else
+            bundled_lib="${APP_LIB_DIR}/${library_name}"
+        fi
+        if [[ -e "${bundled_lib}" ]]; then
+            bundled_ffmpeg_preload="${bundled_ffmpeg_preload}${bundled_ffmpeg_preload:+:}${bundled_lib}"
+        fi
+    done < "${FFMPEG_PRELOAD_MANIFEST}"
+    export LD_PRELOAD="${bundled_ffmpeg_preload}${LD_PRELOAD:+:${LD_PRELOAD}}"
 fi
 
 exec "${APPDIR}/usr/bin/steamdeckmediaplayer" "$@"
