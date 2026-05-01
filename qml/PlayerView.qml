@@ -11,6 +11,7 @@ FocusScope {
     property double trackActionAtMs: 0
     property string osdText: ""
     property bool osdVisible: false
+    property bool controlsVisible: true
 
     Connections {
         target: AppState
@@ -26,6 +27,7 @@ FocusScope {
                 root.openedAtMs = Date.now()
                 root.lastPrimaryActionMs = root.openedAtMs
                 root.forceActiveFocus()
+                root.showControls()
             }
         }
     }
@@ -51,26 +53,31 @@ FocusScope {
     }
 
     function showOsd(text) {
+        showControls()
         osdText = text
         osdVisible = true
         osdTimer.restart()
     }
 
     function togglePauseWithOsd() {
+        showControls()
         player.togglePause()
     }
 
     function seekBackwardWithOsd() {
+        showControls()
         player.seekBackward()
         showOsd("-10s")
     }
 
     function seekForwardWithOsd() {
+        showControls()
         player.seekForward()
         showOsd("+10s")
     }
 
     function cycleSubtitlesWithOsd() {
+        showControls()
         trackActionAtMs = Date.now()
         player.cycleSubtitles()
         trackFeedbackFallbackTimer.feedbackText = "Subtitles"
@@ -78,10 +85,16 @@ FocusScope {
     }
 
     function cycleAudioWithOsd() {
+        showControls()
         trackActionAtMs = Date.now()
         player.cycleAudioTracks()
         trackFeedbackFallbackTimer.feedbackText = "Audio"
         trackFeedbackFallbackTimer.restart()
+    }
+
+    function showControls() {
+        controlsVisible = true
+        controlsFadeTimer.restart()
     }
 
     function closePlayerAndPersist(force) {
@@ -113,6 +126,12 @@ FocusScope {
     }
 
     Timer {
+        id: controlsFadeTimer
+        interval: 2400
+        onTriggered: root.controlsVisible = false
+    }
+
+    Timer {
         id: trackFeedbackFallbackTimer
         property string feedbackText: ""
         interval: 160
@@ -124,6 +143,8 @@ FocusScope {
         enabled: root.visible && AppState.playerVisible
 
         function onActionPressed(action) {
+            root.showControls()
+
             if (action === "cancel") {
                 root.closePlayerAndPersist()
             } else if (action === "accept" || action === "playPause") {
@@ -150,6 +171,8 @@ FocusScope {
             return
         }
 
+        root.showControls()
+
         if (event.key === Qt.Key_Escape || event.key === Qt.Key_Backspace) {
             closePlayerAndPersist()
             event.accepted = true
@@ -174,165 +197,172 @@ FocusScope {
         }
     }
 
-    ColumnLayout {
+    HoverHandler {
+        onHoveredChanged: if (hovered) root.showControls()
+    }
+
+    TapHandler {
+        onTapped: root.showControls()
+    }
+
+    MpvVideoItem {
+        id: player
         anchors.fill: parent
-        anchors.margins: 40
-        spacing: 24
+        mediaPath: AppState.currentMediaPath
+        startPositionMs: AppState.playbackStartPositionMs
+        requestId: AppState.playbackRequestId
 
-        RowLayout {
-            Layout.fillWidth: true
+        onPlaybackFinished: {
+            AppState.closePlayer()
+        }
 
-            Label {
-                text: AppState.currentMediaTitle
-                color: "#f4f7fb"
-                font.pixelSize: 32
-                font.weight: Font.DemiBold
-                elide: Text.ElideRight
-                Layout.fillWidth: true
+        onPlaybackStopped: {
+            if (AppState.playerVisible) {
+                AppState.closePlayer()
             }
+        }
 
-            Button {
-                text: "Back"
-                onClicked: root.closePlayerAndPersist()
+        onPausedChanged: {
+            if (AppState.playerVisible && !root.isInLaunchGuardWindow()) {
+                root.showOsd(paused ? "Paused" : "Playing")
+            }
+        }
+
+        onSubtitleTrackLabelChanged: {
+            if (AppState.playerVisible && loaded) {
+                trackFeedbackFallbackTimer.stop()
+                root.showOsd(subtitleTrackLabel)
+            }
+        }
+
+        onAudioTrackLabelChanged: {
+            if (AppState.playerVisible && loaded) {
+                trackFeedbackFallbackTimer.stop()
+                root.showOsd(audioTrackLabel)
+            }
+        }
+    }
+
+    Item {
+        id: overlayChrome
+        anchors.fill: parent
+        opacity: root.controlsVisible ? 1 : 0
+        visible: opacity > 0
+
+        Behavior on opacity {
+            NumberAnimation { duration: 220 }
+        }
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            height: 100
+            color: "#05080bcc"
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 40
+                anchors.rightMargin: 40
+                spacing: 18
+
+                Label {
+                    text: AppState.currentMediaTitle
+                    color: "#f4f7fb"
+                    font.pixelSize: 30
+                    font.weight: Font.DemiBold
+                    elide: Text.ElideRight
+                    Layout.fillWidth: true
+                }
+
+                Button {
+                    text: "Back"
+                    onClicked: {
+                        root.showControls()
+                        root.closePlayerAndPersist()
+                    }
+                }
             }
         }
 
         Rectangle {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            radius: 24
-            color: "#101922"
-            border.width: 1
-            border.color: "#263749"
-            clip: true
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            height: 118
+            color: "#05080bcc"
 
-            MpvVideoItem {
-                id: player
+            RowLayout {
                 anchors.fill: parent
-                mediaPath: AppState.currentMediaPath
-                startPositionMs: AppState.playbackStartPositionMs
-                requestId: AppState.playbackRequestId
+                anchors.leftMargin: 40
+                anchors.rightMargin: 40
+                spacing: 14
 
-                onPlaybackFinished: {
-                    AppState.closePlayer()
+                Button {
+                    text: player.paused ? "Play" : "Pause"
+                    onClicked: root.togglePauseWithOsd()
                 }
 
-                onPlaybackStopped: {
-                    if (AppState.playerVisible) {
-                        AppState.closePlayer()
-                    }
+                Button {
+                    text: "-10s"
+                    onClicked: root.seekBackwardWithOsd()
                 }
 
-                onPausedChanged: {
-                    if (AppState.playerVisible && !root.isInLaunchGuardWindow()) {
-                        root.showOsd(paused ? "Paused" : "Playing")
-                    }
+                Button {
+                    text: "+10s"
+                    onClicked: root.seekForwardWithOsd()
                 }
 
-                onSubtitleTrackLabelChanged: {
-                    if (AppState.playerVisible && loaded) {
-                        trackFeedbackFallbackTimer.stop()
-                        root.showOsd(subtitleTrackLabel)
-                    }
+                Button {
+                    text: "Subtitles"
+                    onClicked: root.cycleSubtitlesWithOsd()
                 }
 
-                onAudioTrackLabelChanged: {
-                    if (AppState.playerVisible && loaded) {
-                        trackFeedbackFallbackTimer.stop()
-                        root.showOsd(audioTrackLabel)
-                    }
+                Button {
+                    text: "Audio"
+                    onClicked: root.cycleAudioWithOsd()
                 }
-            }
 
-            Rectangle {
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 126
-                width: Math.min(parent.width - 80, Math.max(260, osdLabel.implicitWidth + 44))
-                height: 58
-                radius: 16
-                color: "#05080bdd"
-                border.width: 1
-                border.color: "#385168"
-                opacity: root.osdVisible ? 1 : 0
-                visible: opacity > 0
-
-                Behavior on opacity {
-                    NumberAnimation { duration: 140 }
+                Item {
+                    Layout.fillWidth: true
                 }
 
                 Label {
-                    id: osdLabel
-                    anchors.centerIn: parent
-                    width: parent.width - 28
-                    text: root.osdText
+                    text: AppState.formatDuration(player.positionMs) + " / " + AppState.formatDuration(player.durationMs)
                     color: "#f4f7fb"
-                    font.pixelSize: 24
-                    font.weight: Font.DemiBold
-                    horizontalAlignment: Text.AlignHCenter
-                    elide: Text.ElideRight
-                }
-            }
-
-            Rectangle {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
-                anchors.margins: 18
-                implicitHeight: 94
-                radius: 18
-                color: "#111923dd"
-                border.width: 1
-                border.color: "#2a3d4f"
-
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 18
-                    anchors.rightMargin: 18
-                    spacing: 14
-
-                    Button {
-                        text: player.paused ? "Play" : "Pause"
-                        onClicked: root.togglePauseWithOsd()
-                    }
-
-                    Button {
-                        text: "-10s"
-                        onClicked: root.seekBackwardWithOsd()
-                    }
-
-                    Button {
-                        text: "+10s"
-                        onClicked: root.seekForwardWithOsd()
-                    }
-
-                    Button {
-                        text: "Subtitles"
-                        onClicked: root.cycleSubtitlesWithOsd()
-                    }
-
-                    Button {
-                        text: "Audio"
-                        onClicked: root.cycleAudioWithOsd()
-                    }
-
-                    Item {
-                        Layout.fillWidth: true
-                    }
-
-                    Label {
-                        text: AppState.formatDuration(player.positionMs) + " / " + AppState.formatDuration(player.durationMs)
-                        color: "#f4f7fb"
-                        font.pixelSize: 20
-                    }
+                    font.pixelSize: 20
                 }
             }
         }
+    }
+
+    Rectangle {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 138
+        width: Math.min(parent.width - 80, Math.max(260, osdLabel.implicitWidth + 44))
+        height: 58
+        radius: 16
+        color: "#05080bdd"
+        border.width: 1
+        border.color: "#385168"
+        opacity: root.osdVisible ? 1 : 0
+        visible: opacity > 0
+
+        Behavior on opacity {
+            NumberAnimation { duration: 140 }
+        }
 
         Label {
-            text: "Controls: A/Start/Enter/P pause, Left/LB/Q and Right/RB/E seek, X subtitles, Y audio, B/Escape back, Select exits"
-            color: "#93a7bb"
-            font.pixelSize: 18
+            id: osdLabel
+            anchors.centerIn: parent
+            width: parent.width - 28
+            text: root.osdText
+            color: "#f4f7fb"
+            font.pixelSize: 24
+            font.weight: Font.DemiBold
+            horizontalAlignment: Text.AlignHCenter
+            elide: Text.ElideRight
         }
     }
 }

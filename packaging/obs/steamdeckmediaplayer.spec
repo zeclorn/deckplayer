@@ -1,5 +1,5 @@
 Name:           steamdeckmediaplayer
-Version:        0.1.0
+Version:        1.0.0
 Release:        0
 Summary:        Controller-friendly local media player for Steam Deck and Linux handhelds
 License:        MIT
@@ -14,6 +14,7 @@ BuildRequires:  pkgconfig(Qt6Gui)
 BuildRequires:  pkgconfig(Qt6Qml)
 BuildRequires:  pkgconfig(Qt6Quick)
 BuildRequires:  pkgconfig(mpv)
+BuildRequires:  pkgconfig(sdl2)
 
 %description
 Steam Deck Media Player is a local-first media browser and player aimed at

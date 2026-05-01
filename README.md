@@ -99,7 +99,7 @@ For early Steam Deck testing as a non-Steam game, map:
 - `Select` or one back grip to quit the app
 - one back grip or extra button to `F` for fullscreen toggle
 
-## Next implementation steps
+## 1.0 release status
 
 Completed:
 
@@ -107,8 +107,23 @@ Completed:
 - Direct gamepad support alongside Steam Input keyboard mappings
 - Playback OSD feedback for pause/play, seek, subtitle, and audio track actions
 - Flatpak desktop and AppStream metadata validation
+- Release metadata is set to `1.0.0`
 
 Next:
 
 1. Final Steam Deck smoke test of the release candidate bundle
 2. Tag the first release when the smoke test passes
+
+## 1.0 smoke test checklist
+
+- Install `dist/io.github.zeclorn.SteamDeckMediaPlayer.flatpak`
+- Launch from Steam Deck Game Mode
+- Browse `~/Videos` with D-pad or left stick
+- Open media with `A`; confirm playback starts full-screen
+- Confirm overlay fades out and reappears after controller input
+- Pause/resume with `A` or `Start`
+- Seek with left/right or `LB`/`RB`
+- Cycle subtitles with `X`
+- Cycle audio tracks with `Y`
+- Return to browser with `B`
+- Exit the app with `Select`
