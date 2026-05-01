@@ -3,10 +3,23 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-BUILD_DIR="${ROOT_DIR}/build-linux"
-APPDIR="${ROOT_DIR}/AppDir"
-OUTPUT_DIR="${ROOT_DIR}/dist"
+BUILD_DIR="${BUILD_DIR:-${ROOT_DIR}/build-linux}"
+APPDIR="${APPDIR:-${ROOT_DIR}/AppDir}"
+OUTPUT_DIR="${OUTPUT_DIR:-${ROOT_DIR}/dist}"
 STEAMOS_MAX_GLIBC="${STEAMOS_MAX_GLIBC:-2.41}"
+LINUXDEPLOY_BIN="${LINUXDEPLOY_BIN:-linuxdeploy}"
+APPIMAGETOOL_BIN="${APPIMAGETOOL_BIN:-appimagetool}"
+
+find_cmd() {
+    local candidate
+    for candidate in "$@"; do
+        if command -v "${candidate}" >/dev/null 2>&1; then
+            printf '%s\n' "${candidate}"
+            return 0
+        fi
+    done
+    return 1
+}
 
 require_cmd() {
     if ! command -v "$1" >/dev/null 2>&1; then
@@ -15,9 +28,33 @@ require_cmd() {
     fi
 }
 
+copy_glob_if_exists() {
+    local source_glob="$1"
+    local target_dir="$2"
+    local source_path
+
+    shopt -s nullglob
+    for source_path in ${source_glob}; do
+        mkdir -p "${target_dir}"
+        cp -a "${source_path}" "${target_dir}/"
+    done
+    shopt -u nullglob
+}
+
+first_existing_path() {
+    local candidate
+    for candidate in "$@"; do
+        if [[ -e "${candidate}" ]]; then
+            printf '%s\n' "${candidate}"
+            return 0
+        fi
+    done
+    return 1
+}
+
 require_cmd cmake
-require_cmd linuxdeploy
-require_cmd appimagetool
+require_cmd "${LINUXDEPLOY_BIN}"
+require_cmd "${APPIMAGETOOL_BIN}"
 require_cmd pkg-config
 
 copy_if_exists() {
@@ -62,6 +99,31 @@ EOF
     exit 1
 fi
 
+QTPATHS_BIN="${QTPATHS_BIN:-$(find_cmd qtpaths6 qtpaths || true)}"
+QT_PLUGIN_DIR="${QT_PLUGIN_DIR:-}"
+QT_QML_DIR="${QT_QML_DIR:-${QML2_IMPORT_PATH:-}}"
+
+if [[ -z "${QT_PLUGIN_DIR}" && -n "${QTPATHS_BIN}" ]]; then
+    QT_PLUGIN_DIR="$("${QTPATHS_BIN}" --query QT_INSTALL_PLUGINS 2>/dev/null || true)"
+fi
+
+if [[ -z "${QT_QML_DIR}" && -n "${QTPATHS_BIN}" ]]; then
+    QT_QML_DIR="$("${QTPATHS_BIN}" --query QT_INSTALL_QML 2>/dev/null || true)"
+fi
+
+QT_PLUGIN_DIR="${QT_PLUGIN_DIR:-$(first_existing_path \
+    /usr/lib64/qt6/plugins \
+    /usr/lib/qt6/plugins \
+    /usr/lib/x86_64-linux-gnu/qt6/plugins || true)}"
+QT_QML_DIR="${QT_QML_DIR:-$(first_existing_path \
+    /usr/lib64/qt6/qml \
+    /usr/lib/qt6/qml \
+    /usr/lib/x86_64-linux-gnu/qt6/qml || true)}"
+MUJS_LIB_GLOB="${MUJS_LIB_GLOB:-$(first_existing_path \
+    /usr/lib64/libmujs.so* \
+    /usr/lib/libmujs.so* \
+    /usr/lib/x86_64-linux-gnu/libmujs.so* || true)}"
+
 rm -rf "${BUILD_DIR}" "${APPDIR}"
 mkdir -p "${OUTPUT_DIR}"
 
@@ -82,18 +144,31 @@ Plugins=plugins
 Qml2Imports=qml
 EOF
 
-copy_if_exists /usr/lib/qt6/plugins/platforms "${APPDIR}/usr/plugins"
-copy_if_exists /usr/lib/qt6/plugins/imageformats "${APPDIR}/usr/plugins"
-copy_if_exists /usr/lib/qt6/plugins/platforminputcontexts "${APPDIR}/usr/plugins"
-copy_if_exists /usr/lib/qt6/plugins/wayland-decoration-client "${APPDIR}/usr/plugins"
-copy_if_exists /usr/lib/qt6/plugins/wayland-graphics-integration-client "${APPDIR}/usr/plugins"
-copy_if_exists /usr/lib/qt6/plugins/wayland-shell-integration "${APPDIR}/usr/plugins"
-copy_if_exists /usr/lib/qt6/qml/QtCore "${APPDIR}/usr/qml"
-copy_if_exists /usr/lib/qt6/qml/QtQml "${APPDIR}/usr/qml"
-copy_if_exists /usr/lib/qt6/qml/QtQuick "${APPDIR}/usr/qml"
-copy_if_exists /usr/lib/libmujs.so "${APPDIR}/usr/lib"
+if [[ -z "${QT_PLUGIN_DIR}" || -z "${QT_QML_DIR}" ]]; then
+    cat >&2 <<EOF
+Unable to locate the Qt 6 plugin and QML import directories automatically.
 
-APPIMAGE_EXTRACT_AND_RUN=1 NO_STRIP=1 LINUXDEPLOY_NO_STRIP=1 linuxdeploy \
+If your distro uses non-standard paths, set:
+  QT_PLUGIN_DIR=/path/to/qt6/plugins
+  QT_QML_DIR=/path/to/qt6/qml
+EOF
+    exit 1
+fi
+
+copy_if_exists "${QT_PLUGIN_DIR}/platforms" "${APPDIR}/usr/plugins"
+copy_if_exists "${QT_PLUGIN_DIR}/imageformats" "${APPDIR}/usr/plugins"
+copy_if_exists "${QT_PLUGIN_DIR}/platforminputcontexts" "${APPDIR}/usr/plugins"
+copy_if_exists "${QT_PLUGIN_DIR}/wayland-decoration-client" "${APPDIR}/usr/plugins"
+copy_if_exists "${QT_PLUGIN_DIR}/wayland-graphics-integration-client" "${APPDIR}/usr/plugins"
+copy_if_exists "${QT_PLUGIN_DIR}/wayland-shell-integration" "${APPDIR}/usr/plugins"
+copy_if_exists "${QT_QML_DIR}/QtCore" "${APPDIR}/usr/qml"
+copy_if_exists "${QT_QML_DIR}/QtQml" "${APPDIR}/usr/qml"
+copy_if_exists "${QT_QML_DIR}/QtQuick" "${APPDIR}/usr/qml"
+if [[ -n "${MUJS_LIB_GLOB}" ]]; then
+    copy_glob_if_exists "${MUJS_LIB_GLOB}" "${APPDIR}/usr/lib"
+fi
+
+APPIMAGE_EXTRACT_AND_RUN=1 NO_STRIP=1 LINUXDEPLOY_NO_STRIP=1 "${LINUXDEPLOY_BIN}" \
     --appdir "${APPDIR}" \
     --desktop-file "${APPDIR}/steamdeckmediaplayer.desktop" \
     --icon-file "${APPDIR}/steamdeckmediaplayer.svg"
@@ -143,7 +218,7 @@ exec "${APPDIR}/usr/bin/steamdeckmediaplayer" "$@"
 EOF
 chmod +x "${APPDIR}/AppRun"
 
-APPIMAGE_EXTRACT_AND_RUN=1 appimagetool "${APPDIR}"
+APPIMAGE_EXTRACT_AND_RUN=1 "${APPIMAGETOOL_BIN}" "${APPDIR}"
 
 mv -f "${ROOT_DIR}"/Steam_Deck_Media_Player-*.AppImage "${OUTPUT_DIR}/" 2>/dev/null || true
 

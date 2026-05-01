@@ -47,7 +47,7 @@ cmake --build build
 
 ## Steam Deck packaging
 
-The Linux packaging assets live under [packaging/linux](/Users/justin/Documents/GitHub/steamdeckmediaplayer/packaging/linux/build-appimage.sh:1).
+The Linux packaging assets live under [packaging/linux](./packaging/linux/build-appimage.sh:1).
 
 To build an AppImage on Linux:
 
@@ -72,6 +72,9 @@ default; set `STEAMDECKMEDIAPLAYER_ALLOW_NEW_GLIBC=1` only for local,
 non-SteamOS test builds.
 
 The script writes the final AppImage to `dist/`.
+
+If you want an older, SteamOS-friendlier build root without maintaining your own
+VM, see the OBS notes in [packaging/obs](./packaging/obs/README.md:1).
 
 ## Recommended Steam Input mapping
 
