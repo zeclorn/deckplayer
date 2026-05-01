@@ -37,7 +37,15 @@ cmake --install "${BUILD_DIR}" --prefix "${APPDIR}/usr"
 cp "${ROOT_DIR}/packaging/linux/steamdeckmediaplayer.desktop" "${APPDIR}/"
 cp "${ROOT_DIR}/assets/icons/steamdeckmediaplayer.svg" "${APPDIR}/steamdeckmediaplayer.svg"
 
-linuxdeploy \
+# Some environments export linuxdeploy/plugin flags globally (e.g. --no-strip),
+# which can break older linuxdeploy builds that do not recognize that flag.
+env \
+    -u LINUXDEPLOY_ARGS \
+    -u LINUXDEPLOY_PLUGIN_QT_FLAGS \
+    -u EXTRA_LINUXDEPLOY_PLUGIN_QT_FLAGS \
+    NO_STRIP=1 \
+    LINUXDEPLOY_NO_STRIP=1 \
+    linuxdeploy \
     --appdir "${APPDIR}" \
     --desktop-file "${APPDIR}/steamdeckmediaplayer.desktop" \
     --icon-file "${APPDIR}/steamdeckmediaplayer.svg" \
