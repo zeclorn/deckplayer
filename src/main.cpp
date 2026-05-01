@@ -7,6 +7,7 @@
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
 #include <QSGRendererInterface>
+#include <QUrl>
 #include <QByteArray>
 #include <qqml.h>
 
@@ -38,7 +39,7 @@ int main(int argc, char *argv[])
         &app,
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
-    engine.loadFromModule(QStringLiteral("SteamDeckMediaPlayer"), QStringLiteral("Main"));
+    engine.load(QUrl(QStringLiteral("qrc:/SteamDeckMediaPlayer/qml/Main.qml")));
 
     return app.exec();
 }

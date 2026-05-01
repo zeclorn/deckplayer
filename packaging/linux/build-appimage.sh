@@ -56,6 +56,7 @@ require_cmd cmake
 require_cmd "${LINUXDEPLOY_BIN}"
 require_cmd "${APPIMAGETOOL_BIN}"
 require_cmd pkg-config
+require_cmd readelf
 
 copy_if_exists() {
     local source_path="$1"
@@ -176,15 +177,26 @@ APPIMAGE_EXTRACT_AND_RUN=1 NO_STRIP=1 LINUXDEPLOY_NO_STRIP=1 "${LINUXDEPLOY_BIN}
 mkdir -p "${APPDIR}/usr/optional-libs"
 mv "${APPDIR}"/usr/lib/libavformat.so* "${APPDIR}/usr/optional-libs/" 2>/dev/null || true
 {
-    printf '%s\n' \
-        "libavutil.so.60" \
-        "libswresample.so.6" \
-        "libswscale.so.9" \
-        "libavcodec.so.62" \
-        "libxml2.so.16" \
-        "libavformat.so.62" \
-        "libavfilter.so.11" \
-        "libavdevice.so.62"
+    declare -A bundled_sonames=()
+    for library_glob in \
+        libavutil.so.* \
+        libswresample.so.* \
+        libswscale.so.* \
+        libavcodec.so.* \
+        libxml2.so.* \
+        libavformat.so.* \
+        libavfilter.so.* \
+        libavdevice.so.*; do
+        for bundled_library in "${APPDIR}"/usr/lib/${library_glob} "${APPDIR}"/usr/optional-libs/${library_glob}; do
+            [[ -e "${bundled_library}" ]] || continue
+            soname="$(readelf -d "${bundled_library}" 2>/dev/null |
+                sed -n 's/.*(SONAME).*Shared library: \[\(.*\)\].*/\1/p' |
+                head -n 1)"
+            soname="${soname:-$(basename "${bundled_library}")}"
+            bundled_sonames["${soname}"]=1
+        done
+    done
+    printf '%s\n' "${!bundled_sonames[@]}" | sort
 } > "${APPDIR}/usr/optional-libs/ffmpeg-preload-libs.txt"
 
 rm -f "${APPDIR}/AppRun"
@@ -198,8 +210,17 @@ APP_LIB_DIR="${APPDIR}/usr/lib"
 OPTIONAL_LIB_DIR="${APPDIR}/usr/optional-libs"
 FFMPEG_PRELOAD_MANIFEST="${OPTIONAL_LIB_DIR}/ffmpeg-preload-libs.txt"
 
+host_has_bundled_libavformat=0
+while IFS= read -r library_name; do
+    if [[ "${library_name}" == libavformat.so.* ]] &&
+        ldconfig -p 2>/dev/null | grep -Fq "${library_name}"; then
+        host_has_bundled_libavformat=1
+        break
+    fi
+done < "${FFMPEG_PRELOAD_MANIFEST}"
+
 if [[ "${STEAMDECKMEDIAPLAYER_USE_BUNDLED_FFMPEG:-0}" == "1" ]] ||
-    ! ldconfig -p 2>/dev/null | grep -q 'libavformat\.so\.62'; then
+    [[ "${host_has_bundled_libavformat}" != "1" ]]; then
     bundled_ffmpeg_preload=""
     while IFS= read -r library_name; do
         if [[ "${library_name}" == "libavformat.so.62" ]]; then
