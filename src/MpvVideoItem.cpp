@@ -228,9 +228,10 @@ void MpvVideoItem::processMpvEvents()
             break;
         case MPV_EVENT_END_FILE: {
             const auto *endFile = static_cast<mpv_event_end_file *>(event->data);
+            const bool wasNearEnd = m_durationMs > 0 && m_positionMs >= qMax<qint64>(0, m_durationMs - 60000);
             setLoaded(false);
             setPositionMs(0);
-            if (endFile && endFile->reason == MPV_END_FILE_REASON_EOF) {
+            if ((endFile && endFile->reason == MPV_END_FILE_REASON_EOF) || wasNearEnd) {
                 emit playbackFinished();
             } else {
                 emit playbackStopped();

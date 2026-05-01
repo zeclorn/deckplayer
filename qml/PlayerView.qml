@@ -6,17 +6,20 @@ import SteamDeckMediaPlayer
 FocusScope {
     id: root
     focus: true
+    property double lastPrimaryActionMs: 0
 
-    function closePlayerAndPersist() {
-        if (!player.loaded && player.positionMs <= 0) {
-            AppState.closePlayer()
-            return
+    function shouldAcceptPrimaryAction() {
+        const now = Date.now()
+        if (now - lastPrimaryActionMs < 350) {
+            return false
         }
+        lastPrimaryActionMs = now
+        return true
+    }
 
-        if (player.durationMs > 0 && player.positionMs >= Math.max(0, player.durationMs - 60000)) {
-            AppState.clearResume(AppState.currentMediaPath)
-        } else if (player.positionMs > 0) {
-            AppState.savePlaybackPosition(player.positionMs)
+    function closePlayerAndPersist(force) {
+        if (!force && !shouldAcceptPrimaryAction()) {
+            return
         }
 
         player.stop()
@@ -28,13 +31,41 @@ FocusScope {
         color: "#05080b"
     }
 
+    Connections {
+        target: ControllerInput
+        enabled: root.visible
+
+        function onActionPressed(action) {
+            if (action === "cancel") {
+                root.closePlayerAndPersist()
+            } else if (action === "accept" || action === "playPause") {
+                if (root.shouldAcceptPrimaryAction()) {
+                    player.togglePause()
+                }
+            } else if (action === "left" || action === "leftShoulder") {
+                player.seekBackward()
+            } else if (action === "right" || action === "rightShoulder") {
+                player.seekForward()
+            } else if (action === "x") {
+                player.cycleSubtitles()
+            } else if (action === "y") {
+                player.cycleAudioTracks()
+            } else if (action === "quit") {
+                root.closePlayerAndPersist(true)
+                Qt.quit()
+            }
+        }
+    }
+
     Keys.onPressed: event => {
         if (event.key === Qt.Key_Escape || event.key === Qt.Key_Backspace) {
             closePlayerAndPersist()
             event.accepted = true
         } else if (event.key === Qt.Key_Space || event.key === Qt.Key_Return
                 || event.key === Qt.Key_Enter || event.key === Qt.Key_P) {
-            player.togglePause()
+            if (root.shouldAcceptPrimaryAction()) {
+                player.togglePause()
+            }
             event.accepted = true
         } else if (event.key === Qt.Key_Left || event.key === Qt.Key_Q) {
             player.seekBackward()
@@ -91,7 +122,6 @@ FocusScope {
                 requestId: AppState.playbackRequestId
 
                 onPlaybackFinished: {
-                    AppState.clearResume(AppState.currentMediaPath)
                     AppState.closePlayer()
                 }
 
@@ -158,7 +188,7 @@ FocusScope {
         }
 
         Label {
-            text: "Controls: A/Enter/P pause, Left/Q and Right/E seek, X subtitles, Y audio, B/Escape back, F fullscreen"
+            text: "Controls: A/Start/Enter/P pause, Left/LB/Q and Right/RB/E seek, X subtitles, Y audio, B/Escape back, Select exits"
             color: "#93a7bb"
             font.pixelSize: 18
         }

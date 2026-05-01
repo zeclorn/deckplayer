@@ -2,13 +2,8 @@
 
 #include <QDir>
 #include <QFileInfo>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QStringList>
 
 namespace {
-
-constexpr qint64 kMinimumResumePromptMs = 30 * 1000;
 
 QString defaultVideosPath()
 {
@@ -19,11 +14,6 @@ QString defaultVideosPath()
     }
 
     return QDir::homePath();
-}
-
-QString resumeStorageKey()
-{
-    return QStringLiteral("playback/resumePositions");
 }
 
 }
@@ -43,11 +33,6 @@ FileBrowserModel *AppState::browserModel()
 bool AppState::playerVisible() const
 {
     return m_playerVisible;
-}
-
-bool AppState::resumePromptVisible() const
-{
-    return m_resumePromptVisible;
 }
 
 QString AppState::currentMediaPath() const
@@ -70,16 +55,6 @@ int AppState::playbackRequestId() const
     return m_playbackRequestId;
 }
 
-QString AppState::pendingMediaTitle() const
-{
-    return m_pendingMediaTitle;
-}
-
-qint64 AppState::pendingResumePositionMs() const
-{
-    return m_pendingResumePositionMs;
-}
-
 bool AppState::showHidden() const
 {
     return m_browserModel.showHidden();
@@ -97,30 +72,11 @@ void AppState::openEntry(const QString &path, bool isDirectory, bool isPlayable)
         return;
     }
 
-    const qint64 resumePosition = savedResumeForPath(path);
-    if (resumePosition >= kMinimumResumePromptMs) {
-        m_pendingMediaPath = path;
-        m_pendingMediaTitle = QFileInfo(path).fileName();
-        m_pendingResumePositionMs = resumePosition;
-        m_resumePromptVisible = true;
-        emit resumePromptVisibleChanged();
-        return;
-    }
-
     beginPlayback(path, 0);
 }
 
 void AppState::goBack()
 {
-    if (m_resumePromptVisible) {
-        m_resumePromptVisible = false;
-        m_pendingMediaPath.clear();
-        m_pendingMediaTitle.clear();
-        m_pendingResumePositionMs = 0;
-        emit resumePromptVisibleChanged();
-        return;
-    }
-
     if (m_playerVisible) {
         closePlayer();
         return;
@@ -144,64 +100,6 @@ void AppState::closePlayer()
 
     m_playerVisible = false;
     emit playerVisibleChanged();
-}
-
-void AppState::chooseResume()
-{
-    if (!m_resumePromptVisible) {
-        return;
-    }
-
-    const QString pendingPath = m_pendingMediaPath;
-    const qint64 pendingPosition = m_pendingResumePositionMs;
-
-    m_resumePromptVisible = false;
-    m_pendingMediaPath.clear();
-    m_pendingMediaTitle.clear();
-    m_pendingResumePositionMs = 0;
-    emit resumePromptVisibleChanged();
-
-    beginPlayback(pendingPath, pendingPosition);
-}
-
-void AppState::chooseStartOver()
-{
-    if (!m_resumePromptVisible) {
-        return;
-    }
-
-    const QString pendingPath = m_pendingMediaPath;
-    clearResume(pendingPath);
-
-    m_resumePromptVisible = false;
-    m_pendingMediaPath.clear();
-    m_pendingMediaTitle.clear();
-    m_pendingResumePositionMs = 0;
-    emit resumePromptVisibleChanged();
-
-    beginPlayback(pendingPath, 0);
-}
-
-void AppState::savePlaybackPosition(qint64 positionMs)
-{
-    if (m_currentMediaPath.isEmpty()) {
-        return;
-    }
-
-    QJsonObject object = QJsonDocument::fromJson(m_settings.value(resumeStorageKey()).toByteArray()).object();
-    object.insert(m_currentMediaPath, QString::number(positionMs));
-    m_settings.setValue(resumeStorageKey(), QJsonDocument(object).toJson(QJsonDocument::Compact));
-}
-
-void AppState::clearResume(const QString &path)
-{
-    if (path.isEmpty()) {
-        return;
-    }
-
-    QJsonObject object = QJsonDocument::fromJson(m_settings.value(resumeStorageKey()).toByteArray()).object();
-    object.remove(path);
-    m_settings.setValue(resumeStorageKey(), QJsonDocument(object).toJson(QJsonDocument::Compact));
 }
 
 QString AppState::formatDuration(qint64 durationMs) const
@@ -260,10 +158,4 @@ void AppState::beginPlayback(const QString &path, qint64 startPositionMs)
     m_playerVisible = true;
     emit currentMediaChanged();
     emit playerVisibleChanged();
-}
-
-qint64 AppState::savedResumeForPath(const QString &path) const
-{
-    const QJsonObject object = QJsonDocument::fromJson(m_settings.value(resumeStorageKey()).toByteArray()).object();
-    return object.value(path).toString().toLongLong();
 }

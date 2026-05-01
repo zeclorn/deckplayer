@@ -6,8 +6,17 @@ import SteamDeckMediaPlayer
 FocusScope {
     id: root
     focus: true
+    property double lastSingleStepMoveMs: 0
+    property double lastAcceptMs: 0
+    property double lastCancelMs: 0
 
     function activateCurrentEntry() {
+        const now = Date.now()
+        if (now - lastAcceptMs < 350) {
+            return
+        }
+        lastAcceptMs = now
+
         if (!browserList.currentItem) {
             return
         }
@@ -17,6 +26,15 @@ FocusScope {
             browserList.currentItem.isDirectory,
             browserList.currentItem.isPlayable
         )
+    }
+
+    function goBackFromBrowser() {
+        const now = Date.now()
+        if (now - lastCancelMs < 350) {
+            return
+        }
+        lastCancelMs = now
+        AppState.goBack()
     }
 
     function ensureListFocus() {
@@ -32,6 +50,14 @@ FocusScope {
             return
         }
 
+        if (Math.abs(delta) === 1) {
+            const now = Date.now()
+            if (now - lastSingleStepMoveMs < 140) {
+                return
+            }
+            lastSingleStepMoveMs = now
+        }
+
         const nextIndex = Math.max(0, Math.min(browserList.count - 1, browserList.currentIndex + delta))
         browserList.currentIndex = nextIndex
         browserList.positionViewAtIndex(nextIndex, ListView.Contain)
@@ -39,6 +65,29 @@ FocusScope {
 
     Component.onCompleted: ensureListFocus()
     onVisibleChanged: if (visible) ensureListFocus()
+
+    Connections {
+        target: ControllerInput
+        enabled: root.visible
+
+        function onActionPressed(action) {
+            if (action === "up") {
+                root.moveSelection(-1)
+            } else if (action === "down") {
+                root.moveSelection(1)
+            } else if (action === "accept") {
+                root.activateCurrentEntry()
+            } else if (action === "cancel") {
+                root.goBackFromBrowser()
+            } else if (action === "leftShoulder") {
+                root.moveSelection(-8)
+            } else if (action === "rightShoulder") {
+                root.moveSelection(8)
+            } else if (action === "quit") {
+                Qt.quit()
+            }
+        }
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -146,13 +195,12 @@ FocusScope {
 
             Keys.onPressed: event => {
                 if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter
-                        || event.key === Qt.Key_Space || event.key === Qt.Key_Right
-                        || event.key === Qt.Key_D) {
+                        || event.key === Qt.Key_Space || event.key === Qt.Key_D) {
                     root.activateCurrentEntry()
                     event.accepted = true
                 } else if (event.key === Qt.Key_Backspace || event.key === Qt.Key_Escape
-                        || event.key === Qt.Key_Left || event.key === Qt.Key_A) {
-                    AppState.goBack()
+                        || event.key === Qt.Key_A) {
+                    root.goBackFromBrowser()
                     event.accepted = true
                 } else if (event.key === Qt.Key_PageDown) {
                     root.moveSelection(10)
@@ -246,7 +294,7 @@ FocusScope {
         }
 
         Label {
-            text: "Controls: D-pad/arrows or W/S move, A/Enter/Right/D opens, B/Escape/Left/A goes back, Q/E or Page Up/Down jump"
+            text: "Controls: D-pad/stick/arrows or W/S move, A/Enter/D opens, B/Escape/A goes back, LB/RB or Q/E jump, Select exits"
             color: "#93a7bb"
             font.pixelSize: 18
         }

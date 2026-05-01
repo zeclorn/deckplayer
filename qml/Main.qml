@@ -26,6 +26,16 @@ ApplicationWindow {
         onActivated: window.toggleFullscreen()
     }
 
+    Connections {
+        target: ControllerInput
+
+        function onActionPressed(action) {
+            if (action === "fullscreen") {
+                window.toggleFullscreen()
+            }
+        }
+    }
+
     StackLayout {
         anchors.fill: parent
         currentIndex: AppState.playerVisible ? 1 : 0
@@ -39,15 +49,5 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
         }
-    }
-
-    ResumeDialog {
-        anchors.centerIn: parent
-        visible: AppState.resumePromptVisible
-        mediaTitle: AppState.pendingMediaTitle
-        resumePositionLabel: AppState.formatDuration(AppState.pendingResumePositionMs)
-        onResumeRequested: AppState.chooseResume()
-        onStartOverRequested: AppState.chooseStartOver()
-        onCancelled: AppState.goBack()
     }
 }

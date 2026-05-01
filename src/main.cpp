@@ -1,4 +1,5 @@
 #include "AppState.h"
+#include "ControllerInput.h"
 #include "MpvVideoItem.h"
 
 #include <clocale>
@@ -28,6 +29,9 @@ int main(int argc, char *argv[])
 
     AppState appState;
     qmlRegisterSingletonInstance("SteamDeckMediaPlayer", 1, 0, "AppState", &appState);
+
+    ControllerInput controllerInput;
+    qmlRegisterSingletonInstance("SteamDeckMediaPlayer", 1, 0, "ControllerInput", &controllerInput);
 
     QQmlApplicationEngine engine;
 

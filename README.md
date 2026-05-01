@@ -7,7 +7,7 @@ Steam Deck Media Player is a small local-first media browser and player aimed at
 - Start in `~/Videos`
 - Exclude hidden files and folders by default, with a toggle to reveal them
 - Show folders first, then likely media files
-- Support a `Resume / Start Over` prompt for partially watched files
+- Always start videos from the beginning
 - Keep the UI large, simple, and reliable with Steam Input mappings
 
 ## Stack
@@ -23,13 +23,14 @@ The repository currently includes:
 
 - a Qt/QML application skeleton
 - a folder-first browser model rooted from the user's filesystem
-- persistence for last visited folder, hidden-file toggle, and saved resume positions
+- persistence for last visited folder and hidden-file toggle
 - embedded `libmpv` playback with pause, seek, subtitle cycling, and audio track cycling
 - controller-friendly keyboard mappings that are easy to bind through Steam Input
+- direct SDL gamepad input for Steam Deck controls and standard controllers
 
 ## Build
 
-You need Qt 6.5 or newer with `Core`, `Gui`, `Qml`, and `Quick`, plus the `libmpv` development package available through `pkg-config` as `mpv`.
+You need Qt 6.5 or newer with `Core`, `Gui`, `Qml`, and `Quick`, plus the `libmpv` and SDL2 development packages available through `pkg-config` as `mpv` and `sdl2`.
 
 ```bash
 cmake -S . -B build
@@ -38,12 +39,19 @@ cmake --build build
 
 ## Controls
 
-- Browser: arrows or D-pad move, `Enter`/`Right` opens, `Escape`/`Left` goes back
+- Browser: arrows or D-pad move, `Enter` opens, `Escape` goes back
 - Browser: `W`/`S` also move, and `Q`/`E` or `Page Up`/`Page Down` jump faster through long folders
 - Browser: `D` also opens and `A` also goes back for Steam Input layouts that prefer face-button letters
 - Player: `Enter` or `P` pauses, `Left`/`Q` seeks backward, `Right`/`E` seeks forward
 - Player: `X` cycles subtitles, `Y` cycles audio tracks, `Escape` exits playback
 - Window: `F` or `F11` toggles fullscreen
+
+Native gamepad controls are also supported:
+
+- Browser: D-pad or left stick moves, `A` opens, `B` goes back, `LB`/`RB` jumps faster
+- Player: `A` or `Start` pauses, D-pad/stick left or `LB` seeks backward, D-pad/stick right or `RB` seeks forward
+- Player: `X` cycles subtitles, `Y` cycles audio tracks, `B` exits playback
+- Window: `Select` exits the app
 
 ## Steam Deck packaging
 
@@ -87,11 +95,17 @@ For early Steam Deck testing as a non-Steam game, map:
 - `LB` to `Q`
 - `RB` to `E`
 - `Start` to `P`
+- `Select` or one back grip to quit the app
 - one back grip or extra button to `F` for fullscreen toggle
 
 ## Next implementation steps
 
+Completed:
+
+- Flatpak packaging builds, installs, and launches for Steam Deck testing
+- Direct gamepad support alongside Steam Input keyboard mappings
+
+Next:
+
 1. Add richer OSD state for subtitle/audio track names and seek feedback
-2. Add direct gamepad support alongside Steam Input keyboard mappings
-3. Test Flatpak install and launch behavior on Steam Deck hardware
-4. Test and tune behavior on actual Steam Deck hardware
+2. Test and tune controller behavior on actual Steam Deck hardware
