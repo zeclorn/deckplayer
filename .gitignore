@@ -1,2 +1,42 @@
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Editor and local tooling state
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# CMake build directories
 build/
-packaging/.DS_Store
+build-*/
+cmake-build-*/
+
+# CMake generated files if configured in the source tree by mistake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+
+# Build outputs
+bin/
+*.o
+*.obj
+*.a
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+
+# AppImage packaging outputs
+AppDir/
+dist/
+*.AppImage
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
