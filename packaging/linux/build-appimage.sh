@@ -19,6 +19,16 @@ require_cmd linuxdeploy
 require_cmd appimagetool
 require_cmd pkg-config
 
+copy_if_exists() {
+    local source_path="$1"
+    local target_dir="$2"
+
+    if [[ -e "${source_path}" ]]; then
+        mkdir -p "${target_dir}"
+        cp -a "${source_path}" "${target_dir}/"
+    fi
+}
+
 if [[ "$(uname -s)" != "Linux" ]]; then
     echo "AppImage packaging must be run on Linux." >&2
     exit 1
@@ -37,8 +47,26 @@ cmake --install "${BUILD_DIR}" --prefix "${APPDIR}/usr"
 cp "${ROOT_DIR}/packaging/linux/steamdeckmediaplayer.desktop" "${APPDIR}/"
 cp "${ROOT_DIR}/assets/icons/steamdeckmediaplayer.svg" "${APPDIR}/steamdeckmediaplayer.svg"
 
+cat > "${APPDIR}/usr/bin/qt.conf" <<'EOF'
+[Paths]
+Prefix=..
+Plugins=plugins
+Qml2Imports=qml
+EOF
+
+copy_if_exists /usr/lib/qt6/plugins/platforms "${APPDIR}/usr/plugins"
+copy_if_exists /usr/lib/qt6/plugins/imageformats "${APPDIR}/usr/plugins"
+copy_if_exists /usr/lib/qt6/plugins/platforminputcontexts "${APPDIR}/usr/plugins"
+copy_if_exists /usr/lib/qt6/plugins/wayland-decoration-client "${APPDIR}/usr/plugins"
+copy_if_exists /usr/lib/qt6/plugins/wayland-graphics-integration-client "${APPDIR}/usr/plugins"
+copy_if_exists /usr/lib/qt6/plugins/wayland-shell-integration "${APPDIR}/usr/plugins"
+copy_if_exists /usr/lib/qt6/qml/QtCore "${APPDIR}/usr/qml"
+copy_if_exists /usr/lib/qt6/qml/QtQml "${APPDIR}/usr/qml"
+copy_if_exists /usr/lib/qt6/qml/QtQuick "${APPDIR}/usr/qml"
+
 APPIMAGE_EXTRACT_AND_RUN=1 NO_STRIP=1 LINUXDEPLOY_NO_STRIP=1 linuxdeploy \
     --appdir "${APPDIR}" \
+    --exclude-library='libavformat.so*' \
     --desktop-file "${APPDIR}/steamdeckmediaplayer.desktop" \
     --icon-file "${APPDIR}/steamdeckmediaplayer.svg" \
     --output appimage
