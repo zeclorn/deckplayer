@@ -1,6 +1,6 @@
 app-id: io.github.zeclorn.SteamDeckMediaPlayer
 runtime: org.kde.Platform
-runtime-version: '6.9'
+runtime-version: '6.10'
 sdk: org.kde.Sdk
 command: steamdeckmediaplayer
 
@@ -22,6 +22,82 @@ cleanup:
   - '*.la'
 
 modules:
+  - name: libass
+    buildsystem: meson
+    config-opts:
+      - -Ddefault_library=shared
+      - -Dtest=disabled
+    sources:
+      - type: git
+        url: https://github.com/libass/libass.git
+        tag: 0.17.4
+        commit: bbb3c7f1570a4a021e52683f3fbdf74fe492ae84
+
+  - name: python3-jinja2
+    buildsystem: simple
+    build-commands:
+      - install -d /app/lib/python3.13/site-packages
+      - cp -a src/jinja2 /app/lib/python3.13/site-packages/
+    sources:
+      - type: git
+        url: https://github.com/pallets/jinja.git
+        tag: 3.1.6
+
+  - name: libplacebo
+    buildsystem: meson
+    build-options:
+      env:
+        PYTHONPATH: /app/lib/python3.13/site-packages
+    config-opts:
+      - -Ddefault_library=shared
+      - -Ddemos=false
+      - -Dtests=false
+      - -Dvulkan=enabled
+      - -Dshaderc=enabled
+      - -Dopengl=disabled
+      - -Dlcms=disabled
+      - -Ddovi=disabled
+      - -Dunwind=disabled
+    sources:
+      - type: git
+        url: https://code.videolan.org/videolan/libplacebo.git
+        tag: v7.360.1
+        commit: cee9b076f2c63104ccfd497fa79c39a867293ec4
+
+  - name: mpv
+    buildsystem: meson
+    config-opts:
+      - -Dlibmpv=true
+      - -Dcplayer=false
+      - -Dlua=disabled
+      - -Djavascript=disabled
+      - -Dlibarchive=disabled
+      - -Ddvdnav=disabled
+      - -Dlibbluray=disabled
+      - -Duchardet=disabled
+      - -Drubberband=disabled
+      - -Dlcms2=disabled
+      - -Djpeg=disabled
+      - -Dlibavdevice=disabled
+      - -Dvulkan=enabled
+      - -Dshaderc=disabled
+      - -Ddrm=disabled
+      - -Dgbm=disabled
+      - -Dvaapi=disabled
+      - -Dvaapi-drm=disabled
+      - -Dvaapi-wayland=disabled
+      - -Dvaapi-x11=disabled
+      - -Dx11=disabled
+      - -Dwayland=disabled
+      - -Degl=enabled
+      - -Dplain-gl=enabled
+      - -Dgl=enabled
+    sources:
+      - type: git
+        url: https://github.com/mpv-player/mpv.git
+        tag: v0.40.0
+        commit: e48ac7ce08462f5e33af6ef9deeac6fa87eef01e
+
   - name: steamdeckmediaplayer
     buildsystem: cmake-ninja
     config-opts:

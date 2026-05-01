@@ -14,9 +14,7 @@
 int main(int argc, char *argv[])
 {
     qputenv("LC_NUMERIC", QByteArrayLiteral("C"));
-    qputenv("LANG", QByteArrayLiteral("C"));
-    qputenv("LC_ALL", QByteArrayLiteral("C"));
-    std::setlocale(LC_ALL, "C");
+    std::setlocale(LC_ALL, "");
     std::setlocale(LC_NUMERIC, "C");
     QLocale::setDefault(QLocale::c());
 
@@ -39,7 +37,7 @@ int main(int argc, char *argv[])
         &app,
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
-    engine.load(QUrl(QStringLiteral("qrc:/SteamDeckMediaPlayer/qml/Main.qml")));
+    engine.loadFromModule("SteamDeckMediaPlayer", "Main");
 
     return app.exec();
 }

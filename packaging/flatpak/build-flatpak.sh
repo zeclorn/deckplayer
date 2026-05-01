@@ -8,7 +8,7 @@ BUILD_DIR="${BUILD_DIR:-${ROOT_DIR}/build-flatpak}"
 REPO_DIR="${REPO_DIR:-${ROOT_DIR}/dist/flatpak-repo}"
 BUNDLE_PATH="${BUNDLE_PATH:-${ROOT_DIR}/dist/io.github.zeclorn.SteamDeckMediaPlayer.flatpak}"
 APP_ID="io.github.zeclorn.SteamDeckMediaPlayer"
-RUNTIME_BRANCH="${RUNTIME_BRANCH:-6.9}"
+RUNTIME_BRANCH="${RUNTIME_BRANCH:-6.10}"
 
 if command -v flatpak-builder >/dev/null 2>&1; then
     BUILDER=(flatpak-builder)
@@ -19,6 +19,7 @@ else
     BUILDER=(flatpak run org.flatpak.Builder)
 fi
 
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 flatpak install -y flathub "org.kde.Platform//${RUNTIME_BRANCH}" "org.kde.Sdk//${RUNTIME_BRANCH}"
 
 mkdir -p "$(dirname "${BUNDLE_PATH}")" "${REPO_DIR}"

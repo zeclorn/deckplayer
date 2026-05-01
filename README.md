@@ -15,7 +15,7 @@ Steam Deck Media Player is a small local-first media browser and player aimed at
 - `Qt 6 + QML` for the shell and UI
 - `libmpv` for playback
 - `CMake` for builds
-- `AppImage` planned for distribution
+- `Flatpak` for Steam Deck distribution
 
 ## Current status
 
@@ -47,34 +47,33 @@ cmake --build build
 
 ## Steam Deck packaging
 
-The Linux packaging assets live under [packaging/linux](./packaging/linux/build-appimage.sh:1).
+The recommended Steam Deck package is Flatpak. The Flatpak manifest builds the
+app, libmpv, and the media playback dependencies inside the KDE Flatpak runtime,
+which avoids depending on the host distro's glibc and Qt library versions.
 
-To build an AppImage on Linux:
+To build a local Flatpak bundle:
 
 ```bash
-./packaging/linux/build-appimage.sh
+./packaging/flatpak/build-flatpak.sh
 ```
 
-That script expects these tools on the Linux build machine:
+The script installs the KDE runtime, KDE SDK, and Flatpak Builder from Flathub
+when they are missing. It writes the bundle to:
 
-- `cmake`
-- `pkg-config`
-- `linuxdeploy`
-- `appimagetool`
-- Qt 6 development packages
-- `libmpv` development packages
+```text
+dist/io.github.zeclorn.SteamDeckMediaPlayer.flatpak
+```
 
-For SteamOS-compatible AppImages, build on SteamOS or on a Linux container/VM
-whose glibc is no newer than SteamOS. Building on a newer rolling distro can
-produce bundled libraries that fail on Steam Deck with errors like
-`GLIBC_2.43 not found`. The packaging script rejects too-new build hosts by
-default; set `STEAMDECKMEDIAPLAYER_ALLOW_NEW_GLIBC=1` only for local,
-non-SteamOS test builds.
+Install and run the local bundle with:
 
-The script writes the final AppImage to `dist/`.
+```bash
+flatpak install --user dist/io.github.zeclorn.SteamDeckMediaPlayer.flatpak
+flatpak run io.github.zeclorn.SteamDeckMediaPlayer
+```
 
-If you want an older, SteamOS-friendlier build root without maintaining your own
-VM, see the OBS notes in [packaging/obs](./packaging/obs/README.md:1).
+The older AppImage packaging script remains under
+[packaging/linux](./packaging/linux/build-appimage.sh:1), but it is no longer
+the preferred Steam Deck distribution path.
 
 ## Recommended Steam Input mapping
 
@@ -94,5 +93,5 @@ For early Steam Deck testing as a non-Steam game, map:
 
 1. Add richer OSD state for subtitle/audio track names and seek feedback
 2. Add direct gamepad support alongside Steam Input keyboard mappings
-3. Add AppImage packaging
+3. Test Flatpak install and launch behavior on Steam Deck hardware
 4. Test and tune behavior on actual Steam Deck hardware

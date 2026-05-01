@@ -36,6 +36,10 @@ AppDir/
 dist/
 *.AppImage
 
+# Flatpak packaging state
+.flatpak-builder/
+*.flatpak
+
 # Logs and temporary files
 *.log
 *.tmp

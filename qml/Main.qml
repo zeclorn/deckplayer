@@ -21,12 +21,9 @@ ApplicationWindow {
         }
     }
 
-    Keys.onPressed: event => {
-        if (event.key === Qt.Key_F11 || event.key === Qt.Key_F
-                || (event.key === Qt.Key_Return && (event.modifiers & Qt.AltModifier))) {
-            toggleFullscreen()
-            event.accepted = true
-        }
+    Shortcut {
+        sequences: ["F", "F11", "Alt+Return"]
+        onActivated: window.toggleFullscreen()
     }
 
     StackLayout {
