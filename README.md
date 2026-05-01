@@ -25,6 +25,7 @@ The repository currently includes:
 - a folder-first browser model rooted from the user's filesystem
 - persistence for last visited folder and hidden-file toggle
 - embedded `libmpv` playback with pause, seek, subtitle cycling, and audio track cycling
+- playback OSD feedback for pause/play, seek, subtitle changes, and audio track changes
 - controller-friendly keyboard mappings that are easy to bind through Steam Input
 - direct SDL gamepad input for Steam Deck controls and standard controllers
 
@@ -104,8 +105,10 @@ Completed:
 
 - Flatpak packaging builds, installs, and launches for Steam Deck testing
 - Direct gamepad support alongside Steam Input keyboard mappings
+- Playback OSD feedback for pause/play, seek, subtitle, and audio track actions
+- Flatpak desktop and AppStream metadata validation
 
 Next:
 
-1. Add richer OSD state for subtitle/audio track names and seek feedback
-2. Test and tune controller behavior on actual Steam Deck hardware
+1. Final Steam Deck smoke test of the release candidate bundle
+2. Tag the first release when the smoke test passes

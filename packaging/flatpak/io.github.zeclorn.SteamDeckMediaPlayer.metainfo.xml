@@ -5,10 +5,18 @@
   <project_license>MIT</project_license>
   <name>Steam Deck Media Player</name>
   <summary>Controller-friendly local media player for Steam Deck and Linux handhelds</summary>
+  <developer id="io.github.zeclorn">
+    <name>zeclorn</name>
+  </developer>
   <description>
     <p>
       Steam Deck Media Player is a local-first media browser and player built
       for Steam Deck Game Mode and KDE desktop use.
+    </p>
+    <p>
+      It starts in the Videos folder, keeps browser controls large and simple,
+      and supports direct gamepad controls for browsing, playback, seeking,
+      subtitle selection, and audio track selection.
     </p>
   </description>
   <launchable type="desktop-id">io.github.zeclorn.SteamDeckMediaPlayer.desktop</launchable>

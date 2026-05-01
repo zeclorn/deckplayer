@@ -4,6 +4,7 @@
 #include <QOpenGLContext>
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLFunctions>
+#include <QStringList>
 #include <QVector>
 
 #include <mpv/client.h>
@@ -162,6 +163,16 @@ qint64 MpvVideoItem::durationMs() const
     return m_durationMs;
 }
 
+QString MpvVideoItem::subtitleTrackLabel() const
+{
+    return m_subtitleTrackLabel;
+}
+
+QString MpvVideoItem::audioTrackLabel() const
+{
+    return m_audioTrackLabel;
+}
+
 void MpvVideoItem::togglePause()
 {
     if (!m_mpv) {
@@ -219,6 +230,7 @@ void MpvVideoItem::processMpvEvents()
         switch (event->event_id) {
         case MPV_EVENT_FILE_LOADED:
             setLoaded(true);
+            refreshTrackLabels();
             if (m_pendingSeekPositionMs > 0) {
                 const double seconds = static_cast<double>(m_pendingSeekPositionMs) / 1000.0;
                 QByteArray secondsText = QByteArray::number(seconds, 'f', 3);
@@ -240,11 +252,16 @@ void MpvVideoItem::processMpvEvents()
         }
         case MPV_EVENT_PROPERTY_CHANGE: {
             const auto *property = static_cast<mpv_event_property *>(event->data);
-            if (!property || !property->data) {
+            if (!property) {
                 break;
             }
 
-            if (qstrcmp(property->name, "pause") == 0 && property->format == MPV_FORMAT_FLAG) {
+            if (qstrcmp(property->name, "sid") == 0 || qstrcmp(property->name, "aid") == 0
+                    || qstrcmp(property->name, "track-list") == 0) {
+                refreshTrackLabels();
+            } else if (!property->data) {
+                break;
+            } else if (qstrcmp(property->name, "pause") == 0 && property->format == MPV_FORMAT_FLAG) {
                 setPaused(*static_cast<int *>(property->data) != 0);
             } else if (qstrcmp(property->name, "time-pos") == 0 && property->format == MPV_FORMAT_DOUBLE) {
                 setPositionMs(static_cast<qint64>(*static_cast<double *>(property->data) * 1000.0));
@@ -270,6 +287,8 @@ void MpvVideoItem::maybeLoadFile()
     setLoaded(false);
     setPositionMs(0);
     setDurationMs(0);
+    setSubtitleTrackLabel(QStringLiteral("Subtitles Off"));
+    setAudioTrackLabel({});
 
     command({QByteArrayLiteral("loadfile"), m_mediaPath.toUtf8(), QByteArrayLiteral("replace")});
 }
@@ -301,6 +320,9 @@ void MpvVideoItem::initializeMpv()
     mpv_observe_property(m_mpv, 0, "pause", MPV_FORMAT_FLAG);
     mpv_observe_property(m_mpv, 0, "time-pos", MPV_FORMAT_DOUBLE);
     mpv_observe_property(m_mpv, 0, "duration", MPV_FORMAT_DOUBLE);
+    mpv_observe_property(m_mpv, 0, "sid", MPV_FORMAT_STRING);
+    mpv_observe_property(m_mpv, 0, "aid", MPV_FORMAT_STRING);
+    mpv_observe_property(m_mpv, 0, "track-list", MPV_FORMAT_NODE);
 }
 
 void MpvVideoItem::initializeRenderContext(QOpenGLContext *context)
@@ -378,6 +400,73 @@ void MpvVideoItem::setDurationMs(qint64 durationMs)
 
     m_durationMs = durationMs;
     emit durationChanged();
+}
+
+void MpvVideoItem::refreshTrackLabels()
+{
+    setSubtitleTrackLabel(selectedTrackLabel("sub", QStringLiteral("Subtitles"), QStringLiteral("Subtitles Off")));
+    setAudioTrackLabel(selectedTrackLabel("audio", QStringLiteral("Audio"), QStringLiteral("Audio Default")));
+}
+
+void MpvVideoItem::setSubtitleTrackLabel(const QString &subtitleTrackLabel)
+{
+    if (m_subtitleTrackLabel == subtitleTrackLabel) {
+        return;
+    }
+
+    m_subtitleTrackLabel = subtitleTrackLabel;
+    emit subtitleTrackLabelChanged();
+}
+
+void MpvVideoItem::setAudioTrackLabel(const QString &audioTrackLabel)
+{
+    if (m_audioTrackLabel == audioTrackLabel) {
+        return;
+    }
+
+    m_audioTrackLabel = audioTrackLabel;
+    emit audioTrackLabelChanged();
+}
+
+QString MpvVideoItem::selectedTrackLabel(const char *type, const QString &enabledPrefix, const QString &disabledLabel) const
+{
+    const QByteArray prefix = QByteArrayLiteral("current-tracks/") + type + QByteArrayLiteral("/");
+    const QString id = propertyString(prefix + QByteArrayLiteral("id"));
+    if (id.isEmpty() || id == QStringLiteral("no") || id == QStringLiteral("auto")) {
+        return disabledLabel;
+    }
+
+    QStringList details;
+    const QString title = propertyString(prefix + QByteArrayLiteral("title"));
+    const QString lang = propertyString(prefix + QByteArrayLiteral("lang"));
+
+    if (!title.isEmpty()) {
+        details.append(title);
+    }
+    if (!lang.isEmpty()) {
+        details.append(lang.toUpper());
+    }
+    if (details.isEmpty()) {
+        details.append(QStringLiteral("Track %1").arg(id));
+    }
+
+    return QStringLiteral("%1: %2").arg(enabledPrefix, details.join(QStringLiteral(" - ")));
+}
+
+QString MpvVideoItem::propertyString(const QByteArray &name) const
+{
+    if (!m_mpv) {
+        return {};
+    }
+
+    char *value = mpv_get_property_string(m_mpv, name.constData());
+    if (!value) {
+        return {};
+    }
+
+    const QString result = QString::fromUtf8(value);
+    mpv_free(value);
+    return result;
 }
 
 void MpvVideoItem::command(const QList<QByteArray> &arguments)

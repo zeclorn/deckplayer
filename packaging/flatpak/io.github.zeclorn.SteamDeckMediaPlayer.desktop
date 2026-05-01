@@ -5,6 +5,7 @@ Comment=Controller-friendly local media player for Steam Deck and Linux handheld
 Exec=steamdeckmediaplayer
 Icon=io.github.zeclorn.SteamDeckMediaPlayer
 Categories=AudioVideo;Player;Video;
+MimeType=video/mp4;video/x-matroska;video/x-msvideo;video/quicktime;video/webm;video/mpeg;video/x-ms-wmv;video/x-flv;video/ogg;application/ogg;
 Terminal=false
 StartupNotify=false
 Keywords=steam deck;media;video;player;local;

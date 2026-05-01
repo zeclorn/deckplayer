@@ -8,6 +8,9 @@ FocusScope {
     focus: true
     property double lastPrimaryActionMs: 0
     property double openedAtMs: 0
+    property double trackActionAtMs: 0
+    property string osdText: ""
+    property bool osdVisible: false
 
     Connections {
         target: AppState
@@ -37,6 +40,9 @@ FocusScope {
         }
 
         const now = Date.now()
+        if (now - trackActionAtMs < 450) {
+            return false
+        }
         if (now - lastPrimaryActionMs < 350) {
             return false
         }
@@ -44,8 +50,46 @@ FocusScope {
         return true
     }
 
+    function showOsd(text) {
+        osdText = text
+        osdVisible = true
+        osdTimer.restart()
+    }
+
+    function togglePauseWithOsd() {
+        player.togglePause()
+    }
+
+    function seekBackwardWithOsd() {
+        player.seekBackward()
+        showOsd("-10s")
+    }
+
+    function seekForwardWithOsd() {
+        player.seekForward()
+        showOsd("+10s")
+    }
+
+    function cycleSubtitlesWithOsd() {
+        trackActionAtMs = Date.now()
+        player.cycleSubtitles()
+        trackFeedbackFallbackTimer.feedbackText = "Subtitles"
+        trackFeedbackFallbackTimer.restart()
+    }
+
+    function cycleAudioWithOsd() {
+        trackActionAtMs = Date.now()
+        player.cycleAudioTracks()
+        trackFeedbackFallbackTimer.feedbackText = "Audio"
+        trackFeedbackFallbackTimer.restart()
+    }
+
     function closePlayerAndPersist(force) {
         if (!force && isInLaunchGuardWindow()) {
+            return
+        }
+
+        if (!force && Date.now() - trackActionAtMs < 450) {
             return
         }
 
@@ -62,6 +106,19 @@ FocusScope {
         color: "#05080b"
     }
 
+    Timer {
+        id: osdTimer
+        interval: 1400
+        onTriggered: root.osdVisible = false
+    }
+
+    Timer {
+        id: trackFeedbackFallbackTimer
+        property string feedbackText: ""
+        interval: 160
+        onTriggered: root.showOsd(feedbackText)
+    }
+
     Connections {
         target: ControllerInput
         enabled: root.visible && AppState.playerVisible
@@ -71,16 +128,16 @@ FocusScope {
                 root.closePlayerAndPersist()
             } else if (action === "accept" || action === "playPause") {
                 if (root.shouldAcceptPrimaryAction()) {
-                    player.togglePause()
+                    root.togglePauseWithOsd()
                 }
             } else if (action === "left" || action === "leftShoulder") {
-                player.seekBackward()
+                root.seekBackwardWithOsd()
             } else if (action === "right" || action === "rightShoulder") {
-                player.seekForward()
+                root.seekForwardWithOsd()
             } else if (action === "x") {
-                player.cycleSubtitles()
+                root.cycleSubtitlesWithOsd()
             } else if (action === "y") {
-                player.cycleAudioTracks()
+                root.cycleAudioWithOsd()
             } else if (action === "quit") {
                 root.closePlayerAndPersist(true)
                 Qt.quit()
@@ -99,20 +156,20 @@ FocusScope {
         } else if (event.key === Qt.Key_Space || event.key === Qt.Key_Return
                 || event.key === Qt.Key_Enter || event.key === Qt.Key_P) {
             if (root.shouldAcceptPrimaryAction()) {
-                player.togglePause()
+                root.togglePauseWithOsd()
             }
             event.accepted = true
         } else if (event.key === Qt.Key_Left || event.key === Qt.Key_Q) {
-            player.seekBackward()
+            root.seekBackwardWithOsd()
             event.accepted = true
         } else if (event.key === Qt.Key_Right || event.key === Qt.Key_E) {
-            player.seekForward()
+            root.seekForwardWithOsd()
             event.accepted = true
         } else if (event.key === Qt.Key_X) {
-            player.cycleSubtitles()
+            root.cycleSubtitlesWithOsd()
             event.accepted = true
         } else if (event.key === Qt.Key_Y) {
-            player.cycleAudioTracks()
+            root.cycleAudioWithOsd()
             event.accepted = true
         }
     }
@@ -165,6 +222,56 @@ FocusScope {
                         AppState.closePlayer()
                     }
                 }
+
+                onPausedChanged: {
+                    if (AppState.playerVisible && !root.isInLaunchGuardWindow()) {
+                        root.showOsd(paused ? "Paused" : "Playing")
+                    }
+                }
+
+                onSubtitleTrackLabelChanged: {
+                    if (AppState.playerVisible && loaded) {
+                        trackFeedbackFallbackTimer.stop()
+                        root.showOsd(subtitleTrackLabel)
+                    }
+                }
+
+                onAudioTrackLabelChanged: {
+                    if (AppState.playerVisible && loaded) {
+                        trackFeedbackFallbackTimer.stop()
+                        root.showOsd(audioTrackLabel)
+                    }
+                }
+            }
+
+            Rectangle {
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 126
+                width: Math.min(parent.width - 80, Math.max(260, osdLabel.implicitWidth + 44))
+                height: 58
+                radius: 16
+                color: "#05080bdd"
+                border.width: 1
+                border.color: "#385168"
+                opacity: root.osdVisible ? 1 : 0
+                visible: opacity > 0
+
+                Behavior on opacity {
+                    NumberAnimation { duration: 140 }
+                }
+
+                Label {
+                    id: osdLabel
+                    anchors.centerIn: parent
+                    width: parent.width - 28
+                    text: root.osdText
+                    color: "#f4f7fb"
+                    font.pixelSize: 24
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                    elide: Text.ElideRight
+                }
             }
 
             Rectangle {
@@ -186,27 +293,27 @@ FocusScope {
 
                     Button {
                         text: player.paused ? "Play" : "Pause"
-                        onClicked: player.togglePause()
+                        onClicked: root.togglePauseWithOsd()
                     }
 
                     Button {
                         text: "-10s"
-                        onClicked: player.seekBackward()
+                        onClicked: root.seekBackwardWithOsd()
                     }
 
                     Button {
                         text: "+10s"
-                        onClicked: player.seekForward()
+                        onClicked: root.seekForwardWithOsd()
                     }
 
                     Button {
                         text: "Subtitles"
-                        onClicked: player.cycleSubtitles()
+                        onClicked: root.cycleSubtitlesWithOsd()
                     }
 
                     Button {
                         text: "Audio"
-                        onClicked: player.cycleAudioTracks()
+                        onClicked: root.cycleAudioWithOsd()
                     }
 
                     Item {

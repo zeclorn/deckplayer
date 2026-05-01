@@ -21,6 +21,8 @@ class MpvVideoItem : public QQuickFramebufferObject
     Q_PROPERTY(bool loaded READ loaded NOTIFY loadedChanged)
     Q_PROPERTY(qint64 positionMs READ positionMs NOTIFY positionChanged)
     Q_PROPERTY(qint64 durationMs READ durationMs NOTIFY durationChanged)
+    Q_PROPERTY(QString subtitleTrackLabel READ subtitleTrackLabel NOTIFY subtitleTrackLabelChanged)
+    Q_PROPERTY(QString audioTrackLabel READ audioTrackLabel NOTIFY audioTrackLabelChanged)
 
 public:
     explicit MpvVideoItem(QQuickItem *parent = nullptr);
@@ -41,6 +43,8 @@ public:
     bool loaded() const;
     qint64 positionMs() const;
     qint64 durationMs() const;
+    QString subtitleTrackLabel() const;
+    QString audioTrackLabel() const;
 
     Q_INVOKABLE void togglePause();
     Q_INVOKABLE void seekForward();
@@ -57,6 +61,8 @@ signals:
     void loadedChanged();
     void positionChanged();
     void durationChanged();
+    void subtitleTrackLabelChanged();
+    void audioTrackLabelChanged();
     void playbackFinished();
     void playbackStopped();
 
@@ -74,6 +80,11 @@ private:
     void setLoaded(bool loaded);
     void setPositionMs(qint64 positionMs);
     void setDurationMs(qint64 durationMs);
+    void refreshTrackLabels();
+    void setSubtitleTrackLabel(const QString &subtitleTrackLabel);
+    void setAudioTrackLabel(const QString &audioTrackLabel);
+    QString selectedTrackLabel(const char *type, const QString &enabledPrefix, const QString &disabledLabel) const;
+    QString propertyString(const QByteArray &name) const;
     void command(const QList<QByteArray> &arguments);
 
     static void onMpvWakeup(void *context);
@@ -91,4 +102,6 @@ private:
     bool m_loaded = false;
     qint64 m_positionMs = 0;
     qint64 m_durationMs = 0;
+    QString m_subtitleTrackLabel = QStringLiteral("Subtitles Off");
+    QString m_audioTrackLabel;
 };
