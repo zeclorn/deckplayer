@@ -13,6 +13,7 @@
 namespace {
 
 constexpr int kSeekStepSeconds = 10;
+constexpr int kVolumeStep = 5;
 
 }
 
@@ -173,6 +174,11 @@ QString MpvVideoItem::audioTrackLabel() const
     return m_audioTrackLabel;
 }
 
+int MpvVideoItem::volume() const
+{
+    return m_volume;
+}
+
 void MpvVideoItem::togglePause()
 {
     if (!m_mpv) {
@@ -200,6 +206,16 @@ void MpvVideoItem::cycleSubtitles()
 void MpvVideoItem::cycleAudioTracks()
 {
     command({QByteArrayLiteral("cycle"), QByteArrayLiteral("aid")});
+}
+
+void MpvVideoItem::volumeUp()
+{
+    command({QByteArrayLiteral("add"), QByteArrayLiteral("volume"), QByteArray::number(kVolumeStep)});
+}
+
+void MpvVideoItem::volumeDown()
+{
+    command({QByteArrayLiteral("add"), QByteArrayLiteral("volume"), QByteArray::number(-kVolumeStep)});
 }
 
 void MpvVideoItem::stop()
@@ -267,6 +283,8 @@ void MpvVideoItem::processMpvEvents()
                 setPositionMs(static_cast<qint64>(*static_cast<double *>(property->data) * 1000.0));
             } else if (qstrcmp(property->name, "duration") == 0 && property->format == MPV_FORMAT_DOUBLE) {
                 setDurationMs(static_cast<qint64>(*static_cast<double *>(property->data) * 1000.0));
+            } else if (qstrcmp(property->name, "volume") == 0 && property->format == MPV_FORMAT_DOUBLE) {
+                setVolume(static_cast<int>(*static_cast<double *>(property->data)));
             }
             break;
         }
@@ -323,6 +341,7 @@ void MpvVideoItem::initializeMpv()
     mpv_observe_property(m_mpv, 0, "sid", MPV_FORMAT_STRING);
     mpv_observe_property(m_mpv, 0, "aid", MPV_FORMAT_STRING);
     mpv_observe_property(m_mpv, 0, "track-list", MPV_FORMAT_NODE);
+    mpv_observe_property(m_mpv, 0, "volume", MPV_FORMAT_DOUBLE);
 }
 
 void MpvVideoItem::initializeRenderContext(QOpenGLContext *context)
@@ -400,6 +419,16 @@ void MpvVideoItem::setDurationMs(qint64 durationMs)
 
     m_durationMs = durationMs;
     emit durationChanged();
+}
+
+void MpvVideoItem::setVolume(int volume)
+{
+    if (m_volume == volume) {
+        return;
+    }
+
+    m_volume = volume;
+    emit volumeChanged();
 }
 
 void MpvVideoItem::refreshTrackLabels()

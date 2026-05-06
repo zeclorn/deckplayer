@@ -1,12 +1,21 @@
 # OS metadata
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Editor and local tooling state
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
+
+# Qt Creator
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+.qtc_clangd/
 
 # CMake build directories
 build/
@@ -19,6 +28,16 @@ CMakeFiles/
 cmake_install.cmake
 install_manifest.txt
 compile_commands.json
+_deps/
+Testing/
+
+# Qt auto-generated source files
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.qmlc
+qmlcache/
 
 # Build outputs
 bin/
@@ -31,6 +50,9 @@ bin/
 *.dll
 *.exe
 
+# Clangd cache
+.cache/
+
 # AppImage packaging outputs
 AppDir/
 dist/
@@ -38,9 +60,11 @@ dist/
 
 # Flatpak packaging state
 .flatpak-builder/
+repo/
 *.flatpak
 
 # Logs and temporary files
 *.log
 *.tmp
 *.temp
+core

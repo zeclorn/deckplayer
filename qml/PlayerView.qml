@@ -12,6 +12,7 @@ FocusScope {
     property string osdText: ""
     property bool osdVisible: false
     property bool controlsVisible: true
+    property bool confirmingExit: false
 
     Connections {
         target: AppState
@@ -19,6 +20,7 @@ FocusScope {
         function onCurrentMediaChanged() {
             root.openedAtMs = Date.now()
             root.lastPrimaryActionMs = root.openedAtMs
+            root.confirmingExit = false
             root.forceActiveFocus()
         }
 
@@ -26,6 +28,7 @@ FocusScope {
             if (AppState.playerVisible && root.visible) {
                 root.openedAtMs = Date.now()
                 root.lastPrimaryActionMs = root.openedAtMs
+                root.confirmingExit = false
                 root.forceActiveFocus()
                 root.showControls()
             }
@@ -76,6 +79,16 @@ FocusScope {
         showOsd("+10s")
     }
 
+    function volumeUpWithOsd() {
+        player.volumeUp()
+        showOsd("Volume: " + player.volume + "%")
+    }
+
+    function volumeDownWithOsd() {
+        player.volumeDown()
+        showOsd("Volume: " + player.volume + "%")
+    }
+
     function cycleSubtitlesWithOsd() {
         showControls()
         trackActionAtMs = Date.now()
@@ -97,7 +110,22 @@ FocusScope {
         controlsFadeTimer.restart()
     }
 
-    function closePlayerAndPersist(force) {
+    function savePositionAndClose() {
+        if (player.loaded && player.positionMs > 5000 && player.durationMs > 0) {
+            const nearEnd = player.positionMs >= player.durationMs * 0.95
+            if (nearEnd) {
+                AppState.clearPlaybackPosition(AppState.currentMediaPath)
+            } else {
+                AppState.savePlaybackPosition(AppState.currentMediaPath, player.positionMs)
+            }
+        }
+        confirmingExit = false
+        exitConfirmTimer.stop()
+        player.stop()
+        AppState.closePlayer()
+    }
+
+    function requestClose(force) {
         if (!force && isInLaunchGuardWindow()) {
             return
         }
@@ -106,12 +134,14 @@ FocusScope {
             return
         }
 
-        if (!force && !shouldAcceptPrimaryAction()) {
+        if (!force && player.loaded && !confirmingExit) {
+            confirmingExit = true
+            exitConfirmTimer.restart()
+            showControls()
             return
         }
 
-        player.stop()
-        AppState.closePlayer()
+        savePositionAndClose()
     }
 
     Rectangle {
@@ -132,6 +162,12 @@ FocusScope {
     }
 
     Timer {
+        id: exitConfirmTimer
+        interval: 5000
+        onTriggered: root.confirmingExit = false
+    }
+
+    Timer {
         id: trackFeedbackFallbackTimer
         property string feedbackText: ""
         interval: 160
@@ -145,8 +181,18 @@ FocusScope {
         function onActionPressed(action) {
             root.showControls()
 
+            if (root.confirmingExit) {
+                if (action === "accept" || action === "playPause") {
+                    root.savePositionAndClose()
+                } else if (action === "cancel") {
+                    root.confirmingExit = false
+                    exitConfirmTimer.stop()
+                }
+                return
+            }
+
             if (action === "cancel") {
-                root.closePlayerAndPersist()
+                root.requestClose()
             } else if (action === "accept" || action === "playPause") {
                 if (root.shouldAcceptPrimaryAction()) {
                     root.togglePauseWithOsd()
@@ -155,12 +201,16 @@ FocusScope {
                 root.seekBackwardWithOsd()
             } else if (action === "right" || action === "rightShoulder") {
                 root.seekForwardWithOsd()
+            } else if (action === "up") {
+                root.volumeUpWithOsd()
+            } else if (action === "down") {
+                root.volumeDownWithOsd()
             } else if (action === "x") {
                 root.cycleSubtitlesWithOsd()
             } else if (action === "y") {
                 root.cycleAudioWithOsd()
             } else if (action === "quit") {
-                root.closePlayerAndPersist(true)
+                root.savePositionAndClose()
                 Qt.quit()
             }
         }
@@ -174,11 +224,18 @@ FocusScope {
         root.showControls()
 
         if (event.key === Qt.Key_Escape || event.key === Qt.Key_Backspace) {
-            closePlayerAndPersist()
+            if (root.confirmingExit) {
+                root.confirmingExit = false
+                exitConfirmTimer.stop()
+            } else {
+                root.requestClose()
+            }
             event.accepted = true
         } else if (event.key === Qt.Key_Space || event.key === Qt.Key_Return
                 || event.key === Qt.Key_Enter || event.key === Qt.Key_P) {
-            if (root.shouldAcceptPrimaryAction()) {
+            if (root.confirmingExit) {
+                root.savePositionAndClose()
+            } else if (root.shouldAcceptPrimaryAction()) {
                 root.togglePauseWithOsd()
             }
             event.accepted = true
@@ -187,6 +244,12 @@ FocusScope {
             event.accepted = true
         } else if (event.key === Qt.Key_Right || event.key === Qt.Key_E) {
             root.seekForwardWithOsd()
+            event.accepted = true
+        } else if (event.key === Qt.Key_Up) {
+            root.volumeUpWithOsd()
+            event.accepted = true
+        } else if (event.key === Qt.Key_Down) {
+            root.volumeDownWithOsd()
             event.accepted = true
         } else if (event.key === Qt.Key_X) {
             root.cycleSubtitlesWithOsd()
@@ -213,12 +276,19 @@ FocusScope {
         requestId: AppState.playbackRequestId
 
         onPlaybackFinished: {
+            AppState.clearPlaybackPosition(AppState.currentMediaPath)
             AppState.closePlayer()
         }
 
         onPlaybackStopped: {
             if (AppState.playerVisible) {
                 AppState.closePlayer()
+            }
+        }
+
+        onLoadedChanged: {
+            if (loaded && AppState.playbackStartPositionMs > 0) {
+                root.showOsd("Resuming from " + AppState.formatDuration(AppState.playbackStartPositionMs))
             }
         }
 
@@ -279,7 +349,7 @@ FocusScope {
                     text: "Back"
                     onClicked: {
                         root.showControls()
-                        root.closePlayerAndPersist()
+                        root.requestClose()
                     }
                 }
             }
@@ -314,6 +384,16 @@ FocusScope {
                 }
 
                 Button {
+                    text: "Vol -"
+                    onClicked: root.volumeDownWithOsd()
+                }
+
+                Button {
+                    text: "Vol +"
+                    onClicked: root.volumeUpWithOsd()
+                }
+
+                Button {
                     text: "Subtitles"
                     onClicked: root.cycleSubtitlesWithOsd()
                 }
@@ -336,6 +416,39 @@ FocusScope {
         }
     }
 
+    // Exit confirmation overlay
+    Rectangle {
+        anchors.centerIn: parent
+        width: 460
+        height: 150
+        radius: 20
+        color: "#05080bee"
+        border.width: 1
+        border.color: "#385168"
+        visible: root.confirmingExit
+
+        Column {
+            anchors.centerIn: parent
+            spacing: 18
+
+            Label {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Exit playback?"
+                color: "#f4f7fb"
+                font.pixelSize: 28
+                font.weight: Font.DemiBold
+            }
+
+            Label {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "A  Confirm        B  Cancel"
+                color: "#a0b4c8"
+                font.pixelSize: 19
+            }
+        }
+    }
+
+    // OSD message bubble
     Rectangle {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
