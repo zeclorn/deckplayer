@@ -72,7 +72,7 @@ void AppState::openEntry(const QString &path, bool isDirectory, bool isPlayable)
         return;
     }
 
-    beginPlayback(path, 0);
+    beginPlayback(path, loadPlaybackPosition(path));
 }
 
 void AppState::goBack()
@@ -145,6 +145,28 @@ void AppState::persistSettings()
 {
     m_settings.setValue(QStringLiteral("browser/lastPath"), m_browserModel.currentPath());
     m_settings.setValue(QStringLiteral("browser/showHidden"), m_browserModel.showHidden());
+}
+
+void AppState::savePlaybackPosition(const QString &path, qint64 positionMs)
+{
+    if (positionMs > 0) {
+        m_settings.setValue(positionSettingsKey(path), positionMs);
+    }
+}
+
+void AppState::clearPlaybackPosition(const QString &path)
+{
+    m_settings.remove(positionSettingsKey(path));
+}
+
+qint64 AppState::loadPlaybackPosition(const QString &path) const
+{
+    return m_settings.value(positionSettingsKey(path), 0LL).toLongLong();
+}
+
+QString AppState::positionSettingsKey(const QString &path) const
+{
+    return QStringLiteral("playback/positions/") + QString::fromUtf8(path.toUtf8().toBase64());
 }
 
 void AppState::beginPlayback(const QString &path, qint64 startPositionMs)

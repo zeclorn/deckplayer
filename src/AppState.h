@@ -31,6 +31,8 @@ public:
     Q_INVOKABLE void goBack();
     Q_INVOKABLE void navigateUp();
     Q_INVOKABLE void closePlayer();
+    Q_INVOKABLE void savePlaybackPosition(const QString &path, qint64 positionMs);
+    Q_INVOKABLE void clearPlaybackPosition(const QString &path);
     Q_INVOKABLE QString formatDuration(qint64 durationMs) const;
 
 public slots:
@@ -45,6 +47,8 @@ private:
     void loadSettings();
     void persistSettings();
     void beginPlayback(const QString &path, qint64 startPositionMs);
+    qint64 loadPlaybackPosition(const QString &path) const;
+    QString positionSettingsKey(const QString &path) const;
 
     FileBrowserModel m_browserModel;
     QSettings m_settings;
