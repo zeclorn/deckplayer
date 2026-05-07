@@ -68,3 +68,7 @@ repo/
 *.tmp
 *.temp
 core
+
+# Refactoring reports and backups
+reports/
+backup_temp/
