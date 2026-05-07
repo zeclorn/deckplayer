@@ -122,8 +122,8 @@ FocusScope {
         }
         confirmingExit = false
         exitConfirmTimer.stop()
-        player.stop()
         AppState.closePlayer()
+        player.stop()
     }
 
     function requestClose(force) {

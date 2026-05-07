@@ -71,6 +71,7 @@ FocusScope {
 
         function onPlayerVisibleChanged() {
             if (!AppState.playerVisible && root.visible) {
+                lastAcceptMs = Date.now()
                 root.ensureListFocus()
             }
         }
