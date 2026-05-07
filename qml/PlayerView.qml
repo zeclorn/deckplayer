@@ -417,31 +417,43 @@ FocusScope {
     // Exit confirmation overlay
     Rectangle {
         anchors.centerIn: parent
-        width: 460
-        height: 150
-        radius: 20
-        color: "#05080bee"
-        border.width: 1
-        border.color: "#385168"
+        width: 540
+        height: 180
+        radius: 24
+        color: "#e8101720"
+        border.width: 2
+        border.color: "#6fa8d0"
         visible: root.confirmingExit
+
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: 2
+            radius: 22
+            color: "#000000b0"
+        }
 
         Column {
             anchors.centerIn: parent
-            spacing: 18
+            spacing: 20
 
             Label {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "Exit playback?"
-                color: "#f4f7fb"
-                font.pixelSize: 28
-                font.weight: Font.DemiBold
+                color: "#ffffff"
+                font.pixelSize: 40
+                font.weight: Font.Bold
+                style: Text.Outline
+                styleColor: "#000000"
             }
 
             Label {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "A  Confirm        B  Cancel"
-                color: "#a0b4c8"
-                font.pixelSize: 19
+                text: "A  Confirm          B  Cancel"
+                color: "#d0e8ff"
+                font.pixelSize: 24
+                font.weight: Font.Medium
+                style: Text.Outline
+                styleColor: "#000000"
             }
         }
     }
