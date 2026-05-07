@@ -9,6 +9,7 @@ FocusScope {
     property double lastPrimaryActionMs: 0
     property double openedAtMs: 0
     property double trackActionAtMs: 0
+    property double confirmingExitAtMs: 0
     property string osdText: ""
     property bool osdVisible: false
     property bool controlsVisible: true
@@ -126,16 +127,13 @@ FocusScope {
     }
 
     function requestClose(force) {
-        if (!force && isInLaunchGuardWindow()) {
-            return
-        }
-
         if (!force && Date.now() - trackActionAtMs < 450) {
             return
         }
 
         if (!force && player.loaded && !confirmingExit) {
             confirmingExit = true
+            confirmingExitAtMs = Date.now()
             exitConfirmTimer.restart()
             showControls()
             return
@@ -184,7 +182,7 @@ FocusScope {
             if (root.confirmingExit) {
                 if (action === "accept" || action === "playPause") {
                     root.savePositionAndClose()
-                } else if (action === "cancel") {
+                } else if (action === "cancel" && Date.now() - root.confirmingExitAtMs >= 400) {
                     root.confirmingExit = false
                     exitConfirmTimer.stop()
                 }

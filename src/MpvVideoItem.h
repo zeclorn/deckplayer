@@ -111,4 +111,5 @@ private:
     QString m_subtitleTrackLabel = QStringLiteral("Subtitles Off");
     QString m_audioTrackLabel;
     int m_volume = 100;
+    bool m_intentionalStop = false;
 };
