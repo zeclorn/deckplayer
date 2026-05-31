@@ -1,6 +1,6 @@
 # CLAUDE.md — Steam Deck Media Player
 
-This file documents the codebase structure, build workflows, and conventions for AI assistants working in this repository.
+This file documents the codebase structure, build workflows, and conventions for AI assistants working in this repository. Updated 2026-05-31.
 
 ## Project Overview
 
