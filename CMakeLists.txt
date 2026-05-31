@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(PkgConfig REQUIRED)
-find_package(Qt6 6.4 REQUIRED COMPONENTS Core Gui Qml Quick)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Core Gui Qml Quick OpenGL)
 pkg_check_modules(LIBMPV REQUIRED IMPORTED_TARGET mpv)
 pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
 
@@ -55,6 +55,7 @@ target_link_libraries(steamdeckmediaplayer
         Qt6::Gui
         Qt6::Qml
         Qt6::Quick
+        Qt6::OpenGL
         PkgConfig::LIBMPV
         PkgConfig::SDL2
 )
