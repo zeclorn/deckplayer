@@ -28,6 +28,14 @@
   <url type="homepage">https://github.com/zeclorn/steamdeckmediaplayer</url>
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="1.2.0" date="2026-05-31">
+      <description>
+        <p>
+          Adds GitHub Actions CI, CLAUDE.md codebase documentation, and
+          updated release metadata.
+        </p>
+      </description>
+    </release>
     <release version="1.1.0" date="2026-05-31">
       <description>
         <p>

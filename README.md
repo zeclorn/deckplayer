@@ -17,7 +17,7 @@ Steam Deck Media Player is a small local-first media browser and player aimed at
 - `CMake` for builds
 - `Flatpak` for Steam Deck distribution
 
-## Current status — v1.1.0
+## Current status — v1.2.0
 
 - Folder-first file browser rooted from the user's filesystem
 - Persistence for last visited folder and hidden-file toggle
@@ -100,6 +100,12 @@ For early Steam Deck testing as a non-Steam game, map:
 - one back grip or extra button to `F` for fullscreen toggle
 
 ## Release history
+
+### v1.2.0 — 2026-05-31
+
+- CLAUDE.md codebase documentation for AI assistants
+- GitHub Actions CI (build check on every push and PR to main)
+- Updated release history and version metadata
 
 ### v1.1.0 — 2026-05-31
 
