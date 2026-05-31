@@ -21,35 +21,12 @@ jobs:
             ninja-build \
             qt6-base-dev \
             qt6-declarative-dev \
-            libqt6opengl6-dev \
-            libgl-dev \
-            libegl-dev \
             libmpv-dev \
             libsdl2-dev \
             pkg-config
 
       - name: Configure
-        id: configure
-        run: cmake -S . -B build -G Ninja 2>&1 | tee /tmp/cmake-output.txt; exit ${PIPESTATUS[0]}
-        continue-on-error: true
+        run: cmake -S . -B build -G Ninja
 
       - name: Build
-        id: build
-        if: steps.configure.outcome == 'success'
-        run: cmake --build build --verbose 2>&1 | tee /tmp/build-output.txt; exit ${PIPESTATUS[0]}
-        continue-on-error: true
-
-      - name: Post failure as PR comment
-        if: steps.configure.outcome == 'failure' || steps.build.outcome == 'failure'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          OUTPUT=/tmp/cmake-output.txt
-          [ -f /tmp/build-output.txt ] && OUTPUT=/tmp/build-output.txt
-          CONTENT=$(tail -c 3000 "$OUTPUT")
-          gh pr comment ${{ github.event.pull_request.number }} \
-            --body "## CI build failure output
-          \`\`\`
-          ${CONTENT}
-          \`\`\`"
-          exit 1
+        run: cmake --build build
