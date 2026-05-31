@@ -17,17 +17,17 @@ Steam Deck Media Player is a small local-first media browser and player aimed at
 - `CMake` for builds
 - `Flatpak` for Steam Deck distribution
 
-## Current status
+## Current status — v1.1.0
 
-The repository currently includes:
-
-- a Qt/QML application skeleton
-- a folder-first browser model rooted from the user's filesystem
-- persistence for last visited folder and hidden-file toggle
-- embedded `libmpv` playback with pause, seek, subtitle cycling, and audio track cycling
-- playback OSD feedback for pause/play, seek, subtitle changes, and audio track changes
-- controller-friendly keyboard mappings that are easy to bind through Steam Input
-- direct SDL gamepad input for Steam Deck controls and standard controllers
+- Folder-first file browser rooted from the user's filesystem
+- Persistence for last visited folder and hidden-file toggle
+- Embedded `libmpv` playback with pause, seek, subtitle cycling, and audio track cycling
+- Playback OSD feedback for pause/play, seek, subtitle changes, and audio track changes
+- Controller-friendly keyboard mappings that are easy to bind through Steam Input
+- Direct SDL gamepad input for Steam Deck controls and standard controllers
+- Volume control (LB/RB in player)
+- Per-file playback resume (saves and restores position across sessions)
+- Exit confirmation hold gesture (hold B for 2 seconds) to prevent accidental closes
 
 ## Build
 
@@ -99,31 +99,16 @@ For early Steam Deck testing as a non-Steam game, map:
 - `Select` or one back grip to quit the app
 - one back grip or extra button to `F` for fullscreen toggle
 
-## 1.0 release status
+## Release history
 
-Completed:
+### v1.1.0 — 2026-05-31
 
-- Flatpak packaging builds, installs, and launches for Steam Deck testing
-- Direct gamepad support alongside Steam Input keyboard mappings
-- Playback OSD feedback for pause/play, seek, subtitle, and audio track actions
-- Flatpak desktop and AppStream metadata validation
-- Release metadata is set to `1.0.0`
+- Volume control via LB/RB in the player
+- Per-file playback resume (position saved and restored across sessions)
+- Exit confirmation hold gesture (hold B for 2 seconds) to prevent accidental closes
+- Exit confirmation dialog readability improvements
+- Bug fixes for A/B button confirm and close flows
 
-Next:
+### v1.0.0 — 2026-05-01
 
-1. Final Steam Deck smoke test of the release candidate bundle
-2. Tag the first release when the smoke test passes
-
-## 1.0 smoke test checklist
-
-- Install `dist/io.github.zeclorn.SteamDeckMediaPlayer.flatpak`
-- Launch from Steam Deck Game Mode
-- Browse `~/Videos` with D-pad or left stick
-- Open media with `A`; confirm playback starts full-screen
-- Confirm overlay fades out and reappears after controller input
-- Pause/resume with `A` or `Start`
-- Seek with left/right or `LB`/`RB`
-- Cycle subtitles with `X`
-- Cycle audio tracks with `Y`
-- Return to browser with `B`
-- Exit the app with `Select`
+First stable release. Flatpak packaging, controller-friendly browsing, direct Steam Deck gamepad support, local video playback, subtitle/audio track cycling, and fading playback overlays. Smoke-tested on Steam Deck Game Mode.
