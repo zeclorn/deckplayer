@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(steamdeckmediaplayer VERSION 1.2.0 LANGUAGES CXX)
+project(deckplayer VERSION 1.2.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -19,7 +19,7 @@ if(QT_KNOWN_POLICY_QTP0004)
     qt_policy(SET QTP0004 NEW)
 endif()
 
-qt_add_executable(steamdeckmediaplayer
+qt_add_executable(deckplayer
     src/main.cpp
     src/AppState.cpp
     src/ControllerInput.cpp
@@ -27,14 +27,14 @@ qt_add_executable(steamdeckmediaplayer
     src/MpvVideoItem.cpp
 )
 
-set_target_properties(steamdeckmediaplayer PROPERTIES
+set_target_properties(deckplayer PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-target_include_directories(steamdeckmediaplayer PRIVATE src)
+target_include_directories(deckplayer PRIVATE src)
 
-qt_add_qml_module(steamdeckmediaplayer
-    URI SteamDeckMediaPlayer
+qt_add_qml_module(deckplayer
+    URI DeckPlayer
     VERSION 1.0
     QML_FILES
         qml/Main.qml
@@ -42,14 +42,14 @@ qt_add_qml_module(steamdeckmediaplayer
         qml/PlayerView.qml
 )
 
-target_sources(steamdeckmediaplayer PRIVATE
+target_sources(deckplayer PRIVATE
     src/AppState.h
     src/ControllerInput.h
     src/FileBrowserModel.h
     src/MpvVideoItem.h
 )
 
-target_link_libraries(steamdeckmediaplayer
+target_link_libraries(deckplayer
     PRIVATE
         Qt6::Core
         Qt6::Gui
@@ -60,15 +60,15 @@ target_link_libraries(steamdeckmediaplayer
         PkgConfig::SDL2
 )
 
-install(TARGETS steamdeckmediaplayer
+install(TARGETS deckplayer
     BUNDLE DESTINATION .
     RUNTIME DESTINATION bin
 )
 
-install(FILES packaging/linux/steamdeckmediaplayer.desktop
+install(FILES packaging/linux/deckplayer.desktop
     DESTINATION share/applications
 )
 
-install(FILES assets/icons/steamdeckmediaplayer.svg
+install(FILES assets/icons/deckplayer.svg
     DESTINATION share/icons/hicolor/scalable/apps
 )

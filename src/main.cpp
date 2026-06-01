@@ -20,18 +20,18 @@ int main(int argc, char *argv[])
     QLocale::setDefault(QLocale::c());
 
     QGuiApplication app(argc, argv);
-    app.setOrganizationName(QStringLiteral("steamdeckmediaplayer"));
-    app.setApplicationName(QStringLiteral("steamdeckmediaplayer"));
+    app.setOrganizationName(QStringLiteral("deckplayer"));
+    app.setApplicationName(QStringLiteral("deckplayer"));
 
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
 
-    qmlRegisterType<MpvVideoItem>("SteamDeckMediaPlayer", 1, 0, "MpvVideoItem");
+    qmlRegisterType<MpvVideoItem>("DeckPlayer", 1, 0, "MpvVideoItem");
 
     AppState appState;
-    qmlRegisterSingletonInstance("SteamDeckMediaPlayer", 1, 0, "AppState", &appState);
+    qmlRegisterSingletonInstance("DeckPlayer", 1, 0, "AppState", &appState);
 
     ControllerInput controllerInput;
-    qmlRegisterSingletonInstance("SteamDeckMediaPlayer", 1, 0, "ControllerInput", &controllerInput);
+    qmlRegisterSingletonInstance("DeckPlayer", 1, 0, "ControllerInput", &controllerInput);
 
     QQmlApplicationEngine engine;
 
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         &app,
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
-    engine.loadFromModule("SteamDeckMediaPlayer", "Main");
+    engine.loadFromModule("DeckPlayer", "Main");
 
     return app.exec();
 }

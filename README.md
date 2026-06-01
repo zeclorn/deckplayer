@@ -1,6 +1,6 @@
-# Steam Deck Media Player
+# DeckPlayer
 
-Steam Deck Media Player is a small local-first media browser and player aimed at Steam Deck Game Mode and KDE desktop use. The target workflow is simple: launch from Steam as a non-Steam game, browse `~/Videos` with controller-friendly inputs, and play files stored locally on the device or SD card.
+DeckPlayer is a small local-first media browser and player aimed at Steam Deck Game Mode and KDE desktop use. The target workflow is simple: launch from Steam as a non-Steam game, browse `~/Videos` with controller-friendly inputs, and play files stored locally on the device or SD card.
 
 ## V1 goals
 
@@ -70,14 +70,14 @@ The script installs the KDE runtime, KDE SDK, and Flatpak Builder from Flathub
 when they are missing. It writes the bundle to:
 
 ```text
-dist/io.github.zeclorn.SteamDeckMediaPlayer.flatpak
+dist/io.github.zeclorn.DeckPlayer.flatpak
 ```
 
 Install and run the local bundle with:
 
 ```bash
-flatpak install --user dist/io.github.zeclorn.SteamDeckMediaPlayer.flatpak
-flatpak run io.github.zeclorn.SteamDeckMediaPlayer
+flatpak install --user dist/io.github.zeclorn.DeckPlayer.flatpak
+flatpak run io.github.zeclorn.DeckPlayer
 ```
 
 The older AppImage packaging script remains under

@@ -1,9 +1,9 @@
 [Desktop Entry]
 Type=Application
-Name=Steam Deck Media Player
+Name=DeckPlayer
 Comment=Controller-friendly local media player for Steam Deck and Linux handhelds
-Exec=steamdeckmediaplayer
-Icon=io.github.zeclorn.SteamDeckMediaPlayer
+Exec=deckplayer
+Icon=io.github.zeclorn.DeckPlayer
 Categories=AudioVideo;Player;Video;
 MimeType=video/mp4;video/x-matroska;video/x-msvideo;video/quicktime;video/webm;video/mpeg;video/x-ms-wmv;video/x-flv;video/ogg;application/ogg;
 Terminal=false

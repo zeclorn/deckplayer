@@ -152,8 +152,8 @@ cmake -S "${ROOT_DIR}" -B "${BUILD_DIR}" \
 cmake --build "${BUILD_DIR}" --config Release
 cmake --install "${BUILD_DIR}" --prefix "${APPDIR}/usr"
 
-cp "${ROOT_DIR}/packaging/linux/steamdeckmediaplayer.desktop" "${APPDIR}/"
-cp "${ROOT_DIR}/assets/icons/steamdeckmediaplayer.svg" "${APPDIR}/steamdeckmediaplayer.svg"
+cp "${ROOT_DIR}/packaging/linux/deckplayer.desktop" "${APPDIR}/"
+cp "${ROOT_DIR}/assets/icons/deckplayer.svg" "${APPDIR}/deckplayer.svg"
 
 cat > "${APPDIR}/usr/bin/qt.conf" <<'EOF'
 [Paths]
@@ -212,8 +212,8 @@ copy_qt_library libQt6QmlMeta
 
 APPIMAGE_EXTRACT_AND_RUN=1 NO_STRIP=1 LINUXDEPLOY_NO_STRIP=1 "${LINUXDEPLOY_BIN}" \
     --appdir "${APPDIR}" \
-    --desktop-file "${APPDIR}/steamdeckmediaplayer.desktop" \
-    --icon-file "${APPDIR}/steamdeckmediaplayer.svg"
+    --desktop-file "${APPDIR}/deckplayer.desktop" \
+    --icon-file "${APPDIR}/deckplayer.svg"
 
 mkdir -p "${APPDIR}/usr/optional-libs"
 copy_glob_if_exists "${APPDIR}/usr/lib/libavformat.so*" "${APPDIR}/usr/optional-libs"
@@ -278,7 +278,7 @@ if [[ "${STEAMDECKMEDIAPLAYER_USE_BUNDLED_FFMPEG:-0}" == "1" ]] ||
     export LD_PRELOAD="${bundled_ffmpeg_preload}${LD_PRELOAD:+:${LD_PRELOAD}}"
 fi
 
-exec "${APPDIR}/usr/bin/steamdeckmediaplayer" "$@"
+exec "${APPDIR}/usr/bin/deckplayer" "$@"
 EOF
 chmod +x "${APPDIR}/AppRun"
 

@@ -1,8 +1,8 @@
-app-id: io.github.zeclorn.SteamDeckMediaPlayer
+app-id: io.github.zeclorn.DeckPlayer
 runtime: org.kde.Platform
 runtime-version: '6.10'
 sdk: org.kde.Sdk
-command: steamdeckmediaplayer
+command: deckplayer
 
 finish-args:
   - --share=ipc
@@ -12,7 +12,7 @@ finish-args:
   - --device=dri
   - --device=all
   - --filesystem=host:ro
-  - --persist=.local/share/steamdeckmediaplayer
+  - --persist=.local/share/deckplayer
 
 cleanup:
   - /include
@@ -99,7 +99,7 @@ modules:
         tag: v0.40.0
         commit: e48ac7ce08462f5e33af6ef9deeac6fa87eef01e
 
-  - name: steamdeckmediaplayer
+  - name: deckplayer
     buildsystem: cmake-ninja
     config-opts:
       - -DCMAKE_BUILD_TYPE=Release
@@ -117,8 +117,8 @@ modules:
           - dist
           - output.txt
     post-install:
-      - rm -f /app/share/applications/steamdeckmediaplayer.desktop
-      - rm -f /app/share/icons/hicolor/scalable/apps/steamdeckmediaplayer.svg
-      - install -Dm644 packaging/flatpak/io.github.zeclorn.SteamDeckMediaPlayer.desktop /app/share/applications/io.github.zeclorn.SteamDeckMediaPlayer.desktop
-      - install -Dm644 packaging/flatpak/io.github.zeclorn.SteamDeckMediaPlayer.metainfo.xml /app/share/metainfo/io.github.zeclorn.SteamDeckMediaPlayer.metainfo.xml
-      - install -Dm644 assets/icons/steamdeckmediaplayer.svg /app/share/icons/hicolor/scalable/apps/io.github.zeclorn.SteamDeckMediaPlayer.svg
+      - rm -f /app/share/applications/deckplayer.desktop
+      - rm -f /app/share/icons/hicolor/scalable/apps/deckplayer.svg
+      - install -Dm644 packaging/flatpak/io.github.zeclorn.DeckPlayer.desktop /app/share/applications/io.github.zeclorn.DeckPlayer.desktop
+      - install -Dm644 packaging/flatpak/io.github.zeclorn.DeckPlayer.metainfo.xml /app/share/metainfo/io.github.zeclorn.DeckPlayer.metainfo.xml
+      - install -Dm644 assets/icons/deckplayer.svg /app/share/icons/hicolor/scalable/apps/io.github.zeclorn.DeckPlayer.svg

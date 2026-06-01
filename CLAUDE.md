@@ -1,12 +1,12 @@
-# CLAUDE.md — Steam Deck Media Player
+# CLAUDE.md — DeckPlayer
 
 This file documents the codebase structure, build workflows, and conventions for AI assistants working in this repository. Updated 2026-05-31.
 
 ## Project Overview
 
-Steam Deck Media Player is a lightweight, controller-friendly media browser and player written in **C++20 with Qt 6 / QML**. It targets Steam Deck Game Mode and KDE desktop environments, using **libmpv** for video playback and **SDL2** for gamepad input.
+DeckPlayer is a lightweight, controller-friendly media browser and player written in **C++20 with Qt 6 / QML**. It targets Steam Deck Game Mode and KDE desktop environments, using **libmpv** for video playback and **SDL2** for gamepad input.
 
-- **Version:** 1.0.0
+- **Version:** 1.2.0
 - **License:** MIT
 - **Primary distribution:** Flatpak
 
@@ -15,7 +15,7 @@ Steam Deck Media Player is a lightweight, controller-friendly media browser and 
 ## Repository Structure
 
 ```
-steamdeckmediaplayer/
+deckplayer/
 ├── CMakeLists.txt                  # Build configuration (CMake 3.21+, Qt 6.4+, C++20)
 ├── README.md                       # User-facing docs, control mappings, release checklist
 ├── LICENSE
@@ -34,20 +34,20 @@ steamdeckmediaplayer/
 │   └── PlayerView.qml              # Video player UI with OSD overlays
 │
 ├── assets/icons/
-│   └── steamdeckmediaplayer.svg
+│   └── deckplayer.svg
 │
 └── packaging/
     ├── flatpak/                    # Primary packaging target
-    │   ├── io.github.zeclorn.SteamDeckMediaPlayer.yml   # Flatpak manifest
-    │   ├── io.github.zeclorn.SteamDeckMediaPlayer.desktop
-    │   ├── io.github.zeclorn.SteamDeckMediaPlayer.metainfo.xml
+    │   ├── io.github.zeclorn.DeckPlayer.yml   # Flatpak manifest
+    │   ├── io.github.zeclorn.DeckPlayer.desktop
+    │   ├── io.github.zeclorn.DeckPlayer.metainfo.xml
     │   └── build-flatpak.sh        # Builds bundle to dist/
     ├── linux/                      # AppImage (legacy, not recommended for Steam Deck)
     │   ├── build-appimage.sh
-    │   └── steamdeckmediaplayer.desktop
+    │   └── deckplayer.desktop
     └── obs/                        # OBS (Open Build Service) packaging
         ├── README.md
-        ├── steamdeckmediaplayer.spec
+        ├── deckplayer.spec
         └── install-appimage.sh
 ```
 
@@ -66,7 +66,7 @@ C++ objects are registered as QML singletons in `main.cpp`:
 
 ```cpp
 // AppState and ControllerInput are singletons accessible from any QML file
-qmlRegisterSingletonInstance("SteamDeckMediaPlayer", 1, 0, "AppState", &appState);
+qmlRegisterSingletonInstance("DeckPlayer", 1, 0, "AppState", &appState);
 ```
 
 ### Key Patterns
@@ -108,7 +108,7 @@ cmake -S . -B build
 cmake --build build
 
 # Run
-./build/steamdeckmediaplayer
+./build/deckplayer
 ```
 
 **Required dependencies:**
@@ -123,7 +123,7 @@ cmake --build build
 ```bash
 cd packaging/flatpak
 ./build-flatpak.sh
-# Output: dist/io.github.zeclorn.SteamDeckMediaPlayer.flatpak
+# Output: dist/io.github.zeclorn.DeckPlayer.flatpak
 ```
 
 The script auto-installs `org.kde.Platform//6.10` and `org.kde.Sdk//6.10` if missing. The Flatpak manifest builds libass, libplacebo, and mpv from source before building the app.
@@ -207,13 +207,13 @@ Directory listing: hidden files filtered by default; folders listed before media
 | AppImage | Legacy | `packaging/linux/`; less maintained |
 | OBS | Available | RPM spec in `packaging/obs/` |
 
-App ID: `io.github.zeclorn.SteamDeckMediaPlayer`
+App ID: `io.github.zeclorn.DeckPlayer`
 
 ---
 
 ## CI/CD
 
-No CI/CD pipelines exist. There is no `.github/workflows/` directory. All builds and releases are done manually via the packaging scripts above.
+GitHub Actions CI runs on every push and PR to `main` (`.github/workflows/build.yml`). It builds the project on Ubuntu 24.04 with Qt 6.4+, libmpv, and SDL2. Flatpak and release builds are done manually via the packaging scripts.
 
 ---
 
