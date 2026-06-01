@@ -10,7 +10,6 @@ finish-args:
   - --socket=fallback-x11
   - --socket=pulseaudio
   - --device=dri
-  - --device=all
   - --filesystem=host:ro
   - --persist=.local/share/deckplayer
 
@@ -122,3 +121,4 @@ modules:
       - install -Dm644 packaging/flatpak/io.github.zeclorn.DeckPlayer.desktop /app/share/applications/io.github.zeclorn.DeckPlayer.desktop
       - install -Dm644 packaging/flatpak/io.github.zeclorn.DeckPlayer.metainfo.xml /app/share/metainfo/io.github.zeclorn.DeckPlayer.metainfo.xml
       - install -Dm644 assets/icons/deckplayer.svg /app/share/icons/hicolor/scalable/apps/io.github.zeclorn.DeckPlayer.svg
+      - install -Dm644 LICENSE /app/share/licenses/io.github.zeclorn.DeckPlayer/LICENSE
