@@ -3,11 +3,11 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-MANIFEST="${MANIFEST:-${ROOT_DIR}/packaging/flatpak/io.github.zeclorn.SteamDeckMediaPlayer.yml}"
+MANIFEST="${MANIFEST:-${ROOT_DIR}/packaging/flatpak/io.github.zeclorn.DeckPlayer.yml}"
 BUILD_DIR="${BUILD_DIR:-${ROOT_DIR}/build-flatpak}"
 REPO_DIR="${REPO_DIR:-${ROOT_DIR}/dist/flatpak-repo}"
-BUNDLE_PATH="${BUNDLE_PATH:-${ROOT_DIR}/dist/io.github.zeclorn.SteamDeckMediaPlayer.flatpak}"
-APP_ID="io.github.zeclorn.SteamDeckMediaPlayer"
+BUNDLE_PATH="${BUNDLE_PATH:-${ROOT_DIR}/dist/io.github.zeclorn.DeckPlayer.flatpak}"
+APP_ID="io.github.zeclorn.DeckPlayer"
 RUNTIME_BRANCH="${RUNTIME_BRANCH:-6.10}"
 
 if command -v flatpak-builder >/dev/null 2>&1; then

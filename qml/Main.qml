@@ -2,14 +2,14 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
-import SteamDeckMediaPlayer
+import DeckPlayer
 
 ApplicationWindow {
     id: window
     width: 1280
     height: 800
     visible: true
-    title: "Steam Deck Media Player"
+    title: "DeckPlayer"
     color: "#101922"
     visibility: Qt.platform.os === "linux" ? Window.FullScreen : Window.Windowed
 

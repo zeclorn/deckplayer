@@ -20,7 +20,7 @@ QString defaultVideosPath()
 
 AppState::AppState(QObject *parent)
     : QObject(parent)
-    , m_settings(QStringLiteral("steamdeckmediaplayer"), QStringLiteral("steamdeckmediaplayer"))
+    , m_settings(QStringLiteral("deckplayer"), QStringLiteral("deckplayer"))
 {
     loadSettings();
 }

@@ -38,7 +38,7 @@ That means an OBS spec can point the script at `%{_libdir}/qt6/plugins` and
 
 1. Create an OBS package for this repository.
 2. Target `openSUSE_Leap_15.6` first.
-3. Upload a source archive plus [`packaging/obs/steamdeckmediaplayer.spec`](./packaging/obs/steamdeckmediaplayer.spec:1).
+3. Upload a source archive plus [`packaging/obs/deckplayer.spec`](./packaging/obs/deckplayer.spec:1).
 4. Start by building the native RPM to verify the Qt 6 and `libmpv` dependency
    names on your project target.
 5. After the native package builds cleanly, add `linuxdeploy` and

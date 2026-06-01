@@ -1,9 +1,9 @@
 [Desktop Entry]
 Type=Application
-Name=Steam Deck Media Player
+Name=DeckPlayer
 Comment=Controller-friendly local media player for Steam Deck and Linux handhelds
-Exec=steamdeckmediaplayer
-Icon=steamdeckmediaplayer
+Exec=deckplayer
+Icon=deckplayer
 Categories=AudioVideo;Player;Video;
 Terminal=false
 StartupNotify=false

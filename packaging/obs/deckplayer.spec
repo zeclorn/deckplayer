@@ -1,9 +1,9 @@
-Name:           steamdeckmediaplayer
+Name:           deckplayer
 Version:        1.0.0
 Release:        0
 Summary:        Controller-friendly local media player for Steam Deck and Linux handhelds
 License:        MIT
-URL:            https://github.com/zeclorn/steamdeckmediaplayer
+URL:            https://github.com/zeclorn/deckplayer
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  cmake
@@ -17,7 +17,7 @@ BuildRequires:  pkgconfig(mpv)
 BuildRequires:  pkgconfig(sdl2)
 
 %description
-Steam Deck Media Player is a local-first media browser and player aimed at
+DeckPlayer is a local-first media browser and player aimed at
 Steam Deck Game Mode and KDE desktop use. It uses Qt 6, QML, and libmpv for a
 controller-friendly local playback experience.
 
@@ -34,8 +34,8 @@ controller-friendly local playback experience.
 %files
 %license LICENSE
 %doc README.md
-%{_bindir}/steamdeckmediaplayer
-%{_datadir}/applications/steamdeckmediaplayer.desktop
-%{_datadir}/icons/hicolor/scalable/apps/steamdeckmediaplayer.svg
+%{_bindir}/deckplayer
+%{_datadir}/applications/deckplayer.desktop
+%{_datadir}/icons/hicolor/scalable/apps/deckplayer.svg
 
 %changelog

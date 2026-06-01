@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>io.github.zeclorn.SteamDeckMediaPlayer</id>
+  <id>io.github.zeclorn.DeckPlayer</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
-  <name>Steam Deck Media Player</name>
+  <name>DeckPlayer</name>
   <summary>Controller-friendly local media player for Steam Deck and Linux handhelds</summary>
   <developer id="io.github.zeclorn">
     <name>zeclorn</name>
   </developer>
   <description>
     <p>
-      Steam Deck Media Player is a local-first media browser and player built
+      DeckPlayer is a local-first media browser and player built
       for Steam Deck Game Mode and KDE desktop use.
     </p>
     <p>
@@ -19,13 +19,13 @@
       subtitle selection, and audio track selection.
     </p>
   </description>
-  <launchable type="desktop-id">io.github.zeclorn.SteamDeckMediaPlayer.desktop</launchable>
+  <launchable type="desktop-id">io.github.zeclorn.DeckPlayer.desktop</launchable>
   <categories>
     <category>AudioVideo</category>
     <category>Player</category>
     <category>Video</category>
   </categories>
-  <url type="homepage">https://github.com/zeclorn/steamdeckmediaplayer</url>
+  <url type="homepage">https://github.com/zeclorn/deckplayer</url>
   <content_rating type="oars-1.1" />
   <releases>
     <release version="1.2.0" date="2026-05-31">
