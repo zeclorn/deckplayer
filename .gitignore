@@ -53,10 +53,8 @@ bin/
 # Clangd cache
 .cache/
 
-# AppImage packaging outputs
-AppDir/
+# Flatpak build outputs
 dist/
-*.AppImage
 
 # Flatpak packaging state
 .flatpak-builder/

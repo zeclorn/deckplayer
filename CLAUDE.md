@@ -37,18 +37,11 @@ deckplayer/
 │   └── deckplayer.svg
 │
 └── packaging/
-    ├── flatpak/                    # Primary packaging target
-    │   ├── io.github.zeclorn.DeckPlayer.yml   # Flatpak manifest
-    │   ├── io.github.zeclorn.DeckPlayer.desktop
-    │   ├── io.github.zeclorn.DeckPlayer.metainfo.xml
-    │   └── build-flatpak.sh        # Builds bundle to dist/
-    ├── linux/                      # AppImage (legacy, not recommended for Steam Deck)
-    │   ├── build-appimage.sh
-    │   └── deckplayer.desktop
-    └── obs/                        # OBS (Open Build Service) packaging
-        ├── README.md
-        ├── deckplayer.spec
-        └── install-appimage.sh
+    └── flatpak/                    # Primary (and only) packaging target
+        ├── io.github.zeclorn.DeckPlayer.yml   # Flatpak manifest
+        ├── io.github.zeclorn.DeckPlayer.desktop
+        ├── io.github.zeclorn.DeckPlayer.metainfo.xml
+        └── build-flatpak.sh        # Builds bundle to dist/
 ```
 
 ---
@@ -128,15 +121,6 @@ cd packaging/flatpak
 
 The script auto-installs `org.kde.Platform//6.10` and `org.kde.Sdk//6.10` if missing. The Flatpak manifest builds libass, libplacebo, and mpv from source before building the app.
 
-### AppImage Build (legacy)
-
-```bash
-cd packaging/linux
-./build-appimage.sh
-```
-
-Not recommended for Steam Deck. Prefer Flatpak.
-
 ---
 
 ## Testing
@@ -203,9 +187,7 @@ Directory listing: hidden files filtered by default; folders listed before media
 
 | Format | Status | Notes |
 |--------|--------|-------|
-| Flatpak | Primary | KDE Platform 6.10; targets Steam Deck |
-| AppImage | Legacy | `packaging/linux/`; less maintained |
-| OBS | Available | RPM spec in `packaging/obs/` |
+| Flatpak | Only | KDE Platform 6.10; targets Steam Deck |
 
 App ID: `io.github.zeclorn.DeckPlayer`
 

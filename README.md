@@ -80,10 +80,6 @@ flatpak install --user dist/io.github.zeclorn.DeckPlayer.flatpak
 flatpak run io.github.zeclorn.DeckPlayer
 ```
 
-The older AppImage packaging script remains under
-[packaging/linux](./packaging/linux/build-appimage.sh:1), but it is no longer
-the preferred Steam Deck distribution path.
-
 ## Recommended Steam Input mapping
 
 For early Steam Deck testing as a non-Steam game, map:
