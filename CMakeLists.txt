@@ -65,7 +65,7 @@ install(TARGETS deckplayer
     RUNTIME DESTINATION bin
 )
 
-install(FILES packaging/linux/deckplayer.desktop
+install(FILES packaging/flatpak/io.github.zeclorn.DeckPlayer.desktop
     DESTINATION share/applications
 )
 
