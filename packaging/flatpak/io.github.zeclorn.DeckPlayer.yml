@@ -10,6 +10,7 @@ finish-args:
   - --socket=fallback-x11
   - --socket=pulseaudio
   - --device=dri
+  - --device=all
   - --filesystem=host:ro
   - --persist=.local/share/deckplayer
 
