@@ -19,6 +19,12 @@
       subtitle selection, and audio track selection.
     </p>
   </description>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Browsing a media folder with controller-friendly navigation</caption>
+      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/zeclorn/deckplayer/9e5cffeaecb75febb7c4d0dd08bd13ea8e4f3be3/screenshots/main_screen.png</image>
+    </screenshot>
+  </screenshots>
   <launchable type="desktop-id">io.github.zeclorn.DeckPlayer.desktop</launchable>
   <categories>
     <category>AudioVideo</category>
@@ -28,11 +34,13 @@
   <url type="homepage">https://github.com/zeclorn/deckplayer</url>
   <content_rating type="oars-1.1" />
   <releases>
-    <release version="1.2.0" date="2026-05-31">
+    <release version="1.2.0" date="2026-06-08">
       <description>
         <p>
-          Adds GitHub Actions CI, CLAUDE.md codebase documentation, and
-          updated release metadata.
+          Renames the project to DeckPlayer, switches to Flatpak-only
+          packaging, adds GitHub Actions CI, hardens Flatpak sandbox
+          permissions while preserving full Steam Deck gamepad access,
+          and bundles the LICENSE file.
         </p>
       </description>
     </release>
