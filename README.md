@@ -97,11 +97,13 @@ For early Steam Deck testing as a non-Steam game, map:
 
 ## Release history
 
-### v1.2.0 — 2026-05-31
+### v1.2.0 — 2026-06-08
 
+- Renamed the project from SteamDeckMediaPlayer to DeckPlayer (new app ID `io.github.zeclorn.DeckPlayer`)
+- Switched to Flatpak-only packaging; removed AppImage and OBS build paths
+- Added GitHub Actions CI for Flatpak builds
+- Hardened the Flatpak sandbox permissions and bundled the LICENSE file (kept `--device=all` so SDL2 can read the Deck's built-in gamepad in Game Mode)
 - CLAUDE.md codebase documentation for AI assistants
-- GitHub Actions CI (build check on every push and PR to main)
-- Updated release history and version metadata
 
 ### v1.1.0 — 2026-05-31
 
